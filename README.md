@@ -10,7 +10,7 @@ Jogo local em HTML, CSS e JavaScript, com o Bonk.io de 2025 como referência. **
 
 No modo local, até dois humanos no mesmo teclado, além de zero a seis bots. Há dois bots por padrão. Bots usam os mesmos comandos e a mesma física dos humanos.
 
-**Online com servidor dedicado:** a física e o placar rodam no processo Node do servidor; até cinco participantes usam PINs de 8 dígitos. O criador da sala joga como os convidados. Leia [SERVIDOR.md](SERVIDOR.md) para executar, testar e publicar. A versão 3.1/protocolo 9 exige esse servidor e não usa o banco Firebase para movimento. A publicação no Google ainda depende da habilitação de faturamento pelo proprietário; não foi efetuada.
+**Online com servidor dedicado:** a física e o placar rodam no processo Node do servidor; até cinco participantes usam PINs de 8 dígitos. O criador da sala joga como os convidados. Leia [SERVIDOR.md](SERVIDOR.md) para executar, testar e publicar. A versão 3.1/protocolo 9 exige esse servidor e não usa o banco Firebase para movimento. Jogue gratuitamente em [https://baller-balls.onrender.com](https://baller-balls.onrender.com). O plano Render Free é usado; Firebase permanece no plano gratuito e não transmite movimento.
 
 Todos os humanos online usam previsão local com reconciliação, incluindo o dono. O servidor confirma física, comandos e resultados; a previsão limita a fila a 30 passos. Os outros participantes usam interpolação. Atualize a pasta inteira; esta versão não conecta a salas antigas baseadas na aba do anfitrião.
 
@@ -93,7 +93,7 @@ A versão atual entrega o jogo e o multiplayer pelo servidor Node. Ele executa a
 
 Reconexão automática reserva a vaga por 60 segundos. Sair transfere a administração ao próximo participante. Salas vazias, convites vencidos e sessões encerradas são removidos. O servidor não expira as partidas aos 45 minutos e não guarda histórico crescente de comandos. Um reinício do processo perde as partidas em memória e exige criar uma nova sala.
 
-O projeto Firebase já configurado (bonk-98544) está no plano Spark gratuito. O Realtime Database não executa a física; a publicação em Cloud Run exige faturamento e pode gerar cobrança. A hospedagem ainda não foi ativada. Detalhes, limites, instruções e resultados em [SERVIDOR.md](SERVIDOR.md) e [VERIFICACAO.md](VERIFICACAO.md).
+Servidor gratuito publicado em [https://baller-balls.onrender.com](https://baller-balls.onrender.com), em Virginia, com limite de quatro salas simultâneas. Pode levar cerca de um minuto para acordar após ficar sem tráfego; as cotas do Render Free continuam valendo. Detalhes em [SERVIDOR.md](SERVIDOR.md).
 
 Biblioteca de física, WebSocket e fontes têm suas licenças incluídas; consulte [LICENCAS.md](LICENCAS.md).
 

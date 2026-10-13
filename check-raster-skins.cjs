@@ -15,8 +15,9 @@ const pw=require(path.join(packages,'playwright')),sharp=require(path.join(packa
  const browser=await pw.chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,chromiumSandbox:true});
  try{
   const page=await browser.newPage({viewport:{width:1366,height:900}}),errors=[],remote=[];
-  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!/^(file|data|blob):/.test(r.url()))remote.push(r.url());});
-  await page.goto(pathToFileURL(path.join(__dirname,'index.html')).href);await page.evaluate(()=>BonkSkinArt.ready);
+  const target=process.env.BONK_QA_URL||pathToFileURL(path.join(__dirname,'index.html')).href;
+  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!/^(file|data|blob):/.test(r.url())&&!(process.env.BONK_QA_URL&&r.url().startsWith(process.env.BONK_QA_URL)))remote.push(r.url());});
+  await page.goto(target);await page.evaluate(()=>BonkSkinArt.ready);
   await page.locator('[data-action="skins"]').click();assert.equal(await page.locator('.skin-card').count(),30);
   assert.equal(await page.locator('.appearance-layout canvas').count(),0,'Appearance previews are images, never Canvas');
   await page.locator('[data-skin="fox"]').click();await page.locator('#skinColor').fill('#e65b37');await page.locator('#skinColor').dispatchEvent('input');
@@ -42,7 +43,7 @@ const pw=require(path.join(packages,'playwright')),sharp=require(path.join(packa
   });assert.equal(checks.canvas,0);assert(checks.cache<=96);assert(checks.image);
   await page.locator('[data-action="skins"]').click();await page.locator('#ballSkinsTab').click();
   await page.waitForFunction(()=>Array.from(document.querySelectorAll('.skin-card img')).every(i=>i.complete&&i.naturalWidth>0));
-  fs.mkdirSync(path.join(__dirname,'.qa'),{recursive:true});await page.screenshot({path:path.join(__dirname,'.qa/generated-skins-ui.png')});
+  fs.mkdirSync(path.join(__dirname,'.qa'),{recursive:true});await page.screenshot({path:path.join(__dirname,process.env.BONK_QA_URL?'.qa/generated-skins-live.png':'.qa/generated-skins-ui.png')});
   await page.setViewportSize({width:390,height:844});assert(await page.locator('.appearance-layout').evaluate(e=>e.scrollWidth<=e.clientWidth+1));
   assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
   console.log('PASS: 30 generated grayscale PNG balls + 6 bows; real alpha; actual red/blue tint; 108 color variants; zero Canvas creation in skin engine/previews; offline; persistence; bounded 96-image cache; mobile layout.');

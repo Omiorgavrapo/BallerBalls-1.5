@@ -1,3 +1,13 @@
+## Publicação gratuita e skins PNG — 13/10/2026
+
+- 30 bolinhas (10 refeitas + 20 novas) e 6 arcos gerados pelo image_gen, em cinza com alpha. Originais preservados; 764.402 bytes nas 36 texturas otimizadas.
+- Protocolo 9. check-raster-skins.cjs passou localmente e no site publicado: transparência, cor efetiva, 108 variantes, cache de 96 imagens, salvamento, arquivo offline e layout móvel. Prévias não usam Canvas.
+- Correção do lag: cartões e PNGs reutilizados; apenas a prévia muda de cor; miniaturas em cinza, carregadas sob demanda; blur e arena animada suspensos na tela de aparência. Benchmark no mesmo desktop: 30 mudanças de cor de 346 para 5 ms; 30 seleções de 326 para 20 ms.
+- Chrome local com cinco sessões e novas skins: 60 FPS na amostra, sem erros; simulação continua com o dono desconectado. Três horas simuladas e seis modos aprovados novamente.
+- Publicação Render Free concluída: [https://baller-balls.onrender.com](https://baller-balls.onrender.com). Plano US$ 0, Virginia, quatro salas. Google não recebeu upgrade.
+- check-deployed.cjs: cinco jogadores reais por WebSocket pela internet, texturas novas, retomada do dono, estados ordenados e remoção da sala criada pelo teste. Pings 154/169/159/172/166 ms nesta rede.
+- O plano gratuito pode adormecer, atingir cotas ou reiniciar. Reiniciar perde a partida em memória. Resultados antigos abaixo são históricos.
+
 ## Servidor dedicado — 13 de outubro de 2026
 
 Versão 3/protocolo 8. A interface carrega server-client.js, sem carregar

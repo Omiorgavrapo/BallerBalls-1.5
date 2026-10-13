@@ -27,3 +27,7 @@ cor, alteração efetiva dos pixels exibidos, ausência de Canvas na engine e
 nas prévias, salvamento, arquivo offline, cache limitado e layout móvel.
 `node check-cosmetics.cjs` verifica as 180 combinações de bolinha/arco e que
 elas não alteram a física.
+
+## Correção de desempenho do seletor
+
+Miniaturas são PNGs estáticos em cinza com carregamento adiado. Só as duas imagens da prévia usam filtros de cor compartilhados. Mudar cor ou equipamento conserva os mesmos cartões e imagens; não refaz a grade nem decodifica trinta novas imagens. A animação da arena e o blur ficam desligados enquanto a aparência está aberta. No mesmo desktop, 30 mudanças de cor passaram de 346 para 5 ms; 30 seleções, de 326 para 20 ms. Não é uma medição no aparelho do usuário.

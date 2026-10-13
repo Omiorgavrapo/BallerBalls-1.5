@@ -1,4 +1,16 @@
-# Multiplayer no servidor — versão 3 / protocolo 8
+# Hospedagem gratuita publicada — 13/10/2026
+
+Jogo: [https://baller-balls.onrender.com](https://baller-balls.onrender.com). Serviço Render Free, US$ 0/mês, Virginia, uma instância de 0,1 CPU/512 MB e limite de quatro salas. Repositório Omiorgavrapo/Bonky1.3, branch codex/server-raster-skins. Auto-deploy desativado para não reiniciar partidas ao editar código; novas versões são publicadas manualmente.
+
+O serviço adormece após 15 minutos sem tráfego de usuários e leva cerca de um minuto para acordar. O cliente aguarda até 90 segundos na conexão inicial. Não foi criado ping externo para mantê-lo acordado. As cotas gratuitas são compartilhadas com os outros serviços da conta. Reinícios descartam partidas em memória.
+
+Testado pela internet com cinco jogadores, skins novas, saída e retomada do dono, estados ordenados e limpeza da sala de teste. Nesta rede, cinco pings mediram 154, 169, 159, 172 e 166 ms; isso não promete a mesma latência em outras redes.
+
+Documentação: https://render.com/docs/free e https://render.com/docs/websocket
+
+As instruções Google abaixo são uma alternativa opcional que não foi ativada.
+
+# Multiplayer no servidor — versão 3.1 / protocolo 9
 
 A física, bots, colisões, rodadas e placar agora rodam no processo Node do
 servidor, a 60 passos por segundo. O criador da sala é um cliente, com as

@@ -106,3 +106,5 @@ button:focus,input:focus,select:focus,textarea:focus{outline-color:var(--accent)
 
 /* Generated PNGs: image previews and image-filter recoloring, no Canvas authoring. */
 .outfit-images{height:220px;position:relative;display:flex;align-items:center;justify-content:center;gap:8px}.outfit-images #outfitBall{width:150px;height:150px;object-fit:contain}.outfit-images #outfitBow{width:72px;height:160px;object-fit:contain}.skin-image{height:112px;display:flex;align-items:center;justify-content:center;padding:12px}.skin-image img{max-width:86px;max-height:88px;object-fit:contain}.skin-card span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:700px){.appearance-preview .outfit-images{grid-row:1/6;grid-column:1;height:160px}.outfit-images #outfitBall{width:95px;height:95px}.outfit-images #outfitBow{width:42px;height:110px}}
+
+.modal:has(.appearance-layout){backdrop-filter:none}.skin-color-filters{position:absolute;pointer-events:none}.skin-image img{width:86px;height:88px}.appearance-library{contain:layout style}
