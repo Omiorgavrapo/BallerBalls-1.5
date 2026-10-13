@@ -1,3 +1,88 @@
+## Servidor dedicado — 13 de outubro de 2026
+
+Versão 3/protocolo 8. A interface carrega server-client.js, sem carregar
+pin.js, online.js, lan.js ou lan-room.js. O processo Node executa a física e
+valida o placar. Os testes antigos abaixo registram a arquitetura anterior.
+
+- check-server.cjs: três horas simuladas, sem corte aos 45 minutos; seis modos
+  com cinco participantes; servidor não guarda histórico de replay; comandos
+  antigos não substituem novos e comandos sem atualização são liberados;
+  clientes não podem publicar estados nem inventar placares; falha de física
+  em uma sala não encerra as demais.
+- Sessão recupera a mesma vaga, sem duplicar jogadores; um socket antigo
+  não desconecta seu substituto. A aba do dono não governa o relógio. O dono
+  sair transfere os controles e mantém a partida. Entrada tardia assiste.
+- PINs de uso único expiram em cinco minutos; salas, PINs e sessões foram
+  removidos após 50 ciclos de criação/saída e após expirar vagas desconectadas.
+- WebSocket real: dois clientes, retomada com token, fila de saída limitada a
+  128 KiB, HTTP só entrega arquivos públicos da interface, Origin malformado
+  não derruba o processo.
+- check-server-client.cjs: clientes conectados de verdade, simulação avançando
+  sem chamar update() do dono; teclas enviadas sem aguardar um frame; queda e
+  reconexão automática preservando a mesma identidade e tela; transferência
+  de administração e limpeza de timers/sessionStorage ao sair.
+- check-server-browser.cjs: cinco sessões isoladas no Chrome, PIN diferente
+  por convidado, teclado real, dono desconectado, dono recarregado recuperando
+  a vaga, transferência de dono e partida offline pelo arquivo. Sem erros de
+  página ou requisições ao Firebase. Amostra de 1,5 s: 54 FPS neste desktop com
+  cinco sessões abertas; não mede Chromebook nem redes distintas.
+- check-core.cjs, check-rules.cjs, check-prediction.cjs e check-cosmetics.cjs:
+  aprovados, preservando modos, colisões, regras, mapas, replay local e aparência.
+
+**Publicação pendente:** o console do projeto bonk-98544 mostrou plano Spark
+gratuito. O banco não executa o servidor Node. Cloud Run precisa de
+faturamento habilitado pelo dono. Nenhum plano foi alterado e nenhum serviço
+pago foi ativado. Não houve teste de latência em redes físicas diferentes.
+
+Cloud Run pode fechar sockets no timeout e o cliente retoma no mesmo
+processo. Reiniciar o processo perde as partidas em memória. Publicação usa
+uma única instância; não suporta distribuir salas entre múltiplos processos.
+O servidor limita a recuperação de física a seis passos por iteração.
+
+## Redesenho em SVG — 11 de outubro de 2026
+
+- Novo método em skin-art.js: SVGs feitos à mão, com máscara de cor e camada de detalhes. Imagens são decodificadas uma vez antes da inicialização da interface. Sprites coloridos são reutilizados no Canvas; cache limitado a 128 combinações. Sem fetch de imagens, dependências novas ou imagens geradas por IA.
+- Grid, Piloto e Sentinela mantêm as silhuetas e o visual aprovado. Carinha, Garimpeiro, Camisa 10, Match Point, Arcano, Draco, Autômato e os seis arcos foram refeitos. Carinha usa olhos pequenos, sorriso simples sem dentes e uma variante de detalhes claros para cores escuras. Inspeção visual em raio 44 e raio real de 16 px, sobre a paleta escura.
+- check-skin-art.cjs: 48 variantes de SVG/cor carregadas pelo arquivo com rede bloqueada, sprites reutilizados, redesenho após descarte do cache consistente, contraste da Carinha escura e nenhuma imagem nova criada durante renderização. Pequena tolerância de 2 níveis por canal cobre arredondamento de antialias do navegador. Nenhum erro de página/carregamento ou requisição remota.
+- Chrome por arquivo: dez opções de bolinha e seis de arco, duas cores independentes, prévias, duas escolhas locais, salvamento/reabertura, migração das sete opções removidas e telas em 683×384 e 390×844 aprovados. Testes cosméticos de 60 combinações e testes de salas aprovados.
+- Firebase/WebRTC reais: duas sessões de Chrome neste PC receberam as mesmas skins/cores, cinco participantes, comandos/soltura, desconexão/reconexão, previsão, disparo antecipado, recarga e reserva HTTPS após fechar WebRTC aprovados. Sem erros de página. Mediana de resposta de 36,5 ms em oito amostras; dado do ambiente de teste, sem promessa para outras redes.
+- core.js, prediction.js, online.js, lan-room.js, firebase.rules.json, maps.js e historical-maps.js conferidos por SHA-256 contra baller-balls-catalogo.zip: todos idênticos. Esta mudança não altera física, mira, controles, protocolo, salas, mapas ou formato dos perfis. Protocolo permanece versão 7; clientes v7 anteriores continuam compatíveis, mas mostram a arte que possuem. Para todos verem a arte nova, atualizem a pasta inteira, incluindo skin-art.js. Firebase não exige mudança.
+- Não foi testado em Chromebook ou entre dispositivos físicos em redes diferentes.
+
+## Catálogo vetorial e cor independente do arco — 11 de outubro de 2026
+
+- Oito bolinhas novas (Sentinela, Garimpeiro, Grid, Camisa 10, Match Point, Arcano, Draco e Autômato) e dois arcos novos (Blocos e Espinha de dragão). Carinha refeita com curvas próprias, olhos/pupilas proporcionais, sorriso e detalhes legíveis em tamanho pequeno; Piloto preservada com acabamento revisado. Dez bolinhas e seis arcos no catálogo atual.
+- Sete opções antigas retiradas do catálogo, dos bots, demos, padrões e desenho. IDs antigos são reconhecidos somente para migração para Carinha. Migração testada para os sete casos, conservando apelido, cor, controles, número de bots e vitórias. Mapas e salas não foram removidos do armazenamento/banco.
+- Desenhos vetoriais feitos no Canvas, com Path2D reutilizado; sem imagens geradas ou texturas aleatórias. Sentinela mantém a cor principal escolhida, visor dourado e detalhes contrastantes. Blocos usa uma silhueta de arco formada por degraus explícitos. Captura de catálogo inspecionada em raio 44 e em raio 16, com cores escuras, claras e saturadas.
+- Novo campo cosmético bowColor; segue perfil, estado, snapshot, replay e previsão. Nas configurações antigas, começa com a cor da bolinha. Seletores independentes e prévia ao vivo. Comparação de pixels confirmou que mudar uma cor não modifica o outro equipamento.
+- check-cosmetics.cjs: 60 combinações, replay/previsão, migração, nome/cor preservados e validação de IDs/cores aprovados. check-room.cjs inclui envio das skins/cores aos participantes, perfil antigo sem arco e rejeição de cor remota inválida. Núcleo, regras, previsão e transporte online também aprovados.
+- Comparação direta com core.js do ZIP anterior baller-balls-skins.zip: constantes e faixas dos ajustes iguais; todo estado da partida, excluindo apenas campos cosméticos, idêntico a cada um de 360 ticks nos seis modos. Não foram alteradas colisões, mira, velocidade, gravidade ou recarga.
+- Chrome por arquivo, com rede bloqueada: catálogo, escolhas dos dois jogadores, cores independentes, salvamento/reabertura, migração das sete opções, partida local, prévias e controles alcançáveis em 683×384 e 390×844 aprovados. Verificação de criação/teclado em cinco tamanhos de tela aprovada. Sem erros JavaScript ou recursos externos no local.
+- Firebase e WebRTC reais, duas sessões de Chrome neste PC: host Sentinela/Blocos e convidado Carinha/Espinha de dragão, com cores distintas do arco, recebidos corretamente nos dois lados. Cinco participantes, comandos, soltura, saída/reconexão, previsão com estados retidos, tiro antecipado, mira/recarga e queda para reserva aprovados. Mediana medida de resposta: 36 ms em oito amostras. Dados de teste limpos ao finalizar.
+- Protocolo online versão 7. Todos precisam extrair os arquivos novos; clientes antigos recebem aviso de incompatibilidade. Regras Firebase preservadas. Redes físicas distintas e Chromebook continuam sem teste.
+
+## Tema escuro e skins — 11 de outubro de 2026
+
+- `theme.css`, carregado após os estilos existentes, compartilha a paleta escura do início com criação local, salas, janelas, mapas, configurações, HUD e editor. Campos e controles nativos usam esquema escuro; badges, textos auxiliares e mira foram ajustados para manter contraste. As cores dos mapas são dados do autor e permanecem preservadas.
+- Quatro novas bolinhas: Quadra, Bola 8, Costura e Piloto. Três novos arcos: Recurvo, Mecânico e Meia-lua. Total: nove bolinhas e quatro arcos. Desenhos feitos com traços no Canvas, sem imagens externas, CDN ou dependências novas. A cor do jogador tinge a base e os detalhes do arco, mantendo costuras, visor e painéis contrastantes.
+- Janela Aparência com seleção independente, prévia do conjunto, abas acessíveis pelo teclado, cor base e escolha de jogador. A criação local abre a mesma janela; escolhas do jogador 2 são independentes. Avatar no topo e na sala usa o desenho da bolinha. Configuração salva neste navegador e enviada ao entrar no online.
+- Catálogos e validação em `core.js`; `bowSkin` acompanha perfil, estado, snapshot/replay e previsão. IDs desconhecidos são rejeitados no núcleo e na entrada online. Perfis anteriores sem arco recebem Madeira. Protocolo de convite versão 6 impede conexão com clientes que não conhecem as skins.
+- `check-cosmetics.cjs`: 36 combinações bolinha/arco, replay, previsão, padrões antigos e IDs inválidos aprovados; a física permanece igual em 120 ticks por modo, nos seis modos. `check-core.cjs`, `check-rules.cjs`, `check-room.cjs`, `check-prediction.cjs`, `check-online.cjs`, `check-hybrid.cjs` e `check-baller.cjs`: aprovados. O teste da sala inclui cosméticos no host e convidados.
+- Chrome por arquivo, com rede bloqueada: superfícies escuras em todas as telas, desenhos e variação de cor, escolha dos dois jogadores, persistência após recarregar, partida local e aparência em 683×384 e 390×844 aprovados. A verificação anterior de controles/criação em cinco tamanhos de tela também passou. Capturas de skins, sala, criação, modos, mapas, configurações e editor inspecionadas. Nenhum erro de página ou requisição externa no local.
+- Chrome com Firebase real e WebRTC: host com Quadra/Recurvo, convidado com Piloto/Mecânico, cosméticos recebidos iguais nos dois lados, cinco participantes, comandos/soltura, saída/reconexão, previsão com estados retidos, tiro antecipado/recarga e retorno à reserva após queda aprovados. Mediana de resposta medida: 35,5 ms em oito amostras no mesmo PC. Dados de teste limpos ao finalizar.
+- Regras Firebase preservadas. Duas redes físicas distintas e Chromebook continuam sem teste; o visual novo também não foi medido nesse aparelho.
+
+## Baller Balls, mapas e controles — 11 de outubro de 2026
+
+- Tela inicial renomeada para Baller Balls. Seletores local e online com busca, filtro, miniaturas, prévia grande, detalhes e confirmação. Prévia limpa de marcadores técnicos de edição.
+- Catálogo com 33 entradas: sete novas arenas autorais, incluindo plataformas verdes de impulso. Editor cria, configura, gira e exporta esses blocos; contato na face superior lança jogadores e a bola do Football.
+- Cima/baixo agora giram a mira em Arrows e Death Arrows, além de esquerda/direita. WASD funciona também para o jogador único local e online com direções padrão, sem compartilhar teclado quando há dois humanos locais.
+- Comparação da física padrão 1× contra o núcleo do pacote anterior aos controles personalizados (`bonk-local-lan.zip`): constantes idênticas e posição/rotação dos jogadores iguais a cada tick por 360 ticks em cada um dos 26 mapas anteriores. A mira antiga foi excluída da comparação pois sua rotação foi alterada intencionalmente. Também foram comparadas trajetórias de flechas sem alterar a direção da mira nos dois modos de tiro: 48 amostras de posição/ângulo idênticas, confirmando a velocidade padrão nesses disparos. Não se reproduziu diferença física nesses cenários; isso não comprova fidelidade ao Bonk.io original. Cada mapa tem gravidade própria e o local pode conservar ajustes salvos. A prévia agora informa a gravidade do mapa.
+- Testes do núcleo, regras, sala, convites, transporte, conexão direta/reserva e previsão aprovados. `check-baller.cjs` cobre contato com plataforma de impulso, validação/importação, giros de mira, impulso na bola do Football e replay reproduzível do contato. `check-prediction.cjs` inclui agora explicitamente todos os mapas históricos, totalizando 33.
+- Chrome por arquivo, sem rede: marca, seis cartões de modo, busca/prévia/confirmação, W/S com teclado real, seletor da sala, desenho do bloco no editor e controles alcançáveis em 683×384 e 390×844 aprovados; sem erros JavaScript.
+- Chrome por arquivo com Firebase e WebRTC reais: cinco participantes, controles/soltura, saída/reconexão, previsão com estados do host retidos, tiro antecipado e queda para a reserva aprovados. Oito amostras de resposta no convidado tiveram mediana de 36 ms nesta execução. Ambas as sessões estavam no mesmo PC; redes físicas distintas e Chromebook continuam sem teste.
+- Protocolo online atualizado para versão 5: todos precisam extrair a pasta nova inteira. Regras Firebase preservadas.
+
 # Verificação da entrega
 
 ## Previsão no cliente e reconciliação — 10 de outubro de 2026

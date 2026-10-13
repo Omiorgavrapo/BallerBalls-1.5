@@ -152,8 +152,8 @@ console.log('Desktop Node simulation benchmark (including state snapshots): 10,8
 // Editor logic runs without a DOM; actual clicks/layout still need browser QA.
 global.BonkMaps = require('./maps.js');
 require('./historical-maps.js');
-assert.equal(global.BonkMaps.maps.length, 26, 'complete local and imported catalogue must load');
-assert.equal(new Set(global.BonkMaps.maps.map(m => m.id)).size, 26, 'catalogue IDs must be unique');
+assert.equal(global.BonkMaps.maps.length, 33, 'complete local and imported catalogue must load');
+assert.equal(new Set(global.BonkMaps.maps.map(m => m.id)).size, 33, 'catalogue IDs must be unique');
 const fullRoster = [{ id: 'p1', team: 1 }, { id: 'p2', team: 2 }, ...Array.from({ length: 6 }, (_, i) => ({ id: 'b' + i, bot: true, team: i % 2 + 1 }))];
 for (const original of global.BonkMaps.maps) {
   const arena = global.BonkMaps.validate(copy(original));
@@ -168,7 +168,8 @@ for (const original of global.BonkMaps.maps) {
   }
 }
 for (const mode of Core.MODES) assert(global.BonkMaps.maps.some(m => m.mode === mode), mode + ': catalogue must cover all six modes');
-console.log('PASS: all 26 catalogue entries validate, survive JSON round trip and simulate 600 ticks with two humans plus six bots.');
+console.log('PASS: all 33 catalogue entries validate, survive JSON round trip and simulate 600 ticks with two humans plus six bots.');
 require('./editor.js');
 console.log(global.BonkEditor.selfCheck());
 console.log('PASS: team zone filtering, bounded 18,000-tick session replay and score reset after match.');
+

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: baller-balls
+    runtime: node
+    plan: free
+    region: virginia
+    buildCommand: npm ci --omit=dev --omit=optional --ignore-scripts
+    startCommand: node server.cjs
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: MAX_ROOMS
+        value: 4

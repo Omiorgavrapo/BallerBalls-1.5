@@ -72,4 +72,4 @@ for (const map of global.BonkMaps.maps) for (const rules of [
     assert([...state.players, ...state.bodies, ...state.projectiles, ...(state.ball ? [state.ball] : [])].every(p => Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.angle || 0)), map.id + ': finite physics at allowed extremes');
   }
 }
-console.log('PASS: 26 maps at both allowed rule extremes, eight participants, 360 ticks per configuration.');
+console.log('PASS: all catalogue maps at both allowed rule extremes, eight participants, 360 ticks per configuration.');

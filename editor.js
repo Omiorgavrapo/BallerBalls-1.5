@@ -5,7 +5,7 @@
   var tool = 'select', undoStack = [], redoStack = [], drag = null, polygon = [], jointBody = null;
   var importedInput, loadSelect, isOpen = false, snap = false, resizeObserver;
   var modes = ['classic', 'arrows', 'deatharrows', 'grapple', 'vtol', 'football'];
-  var toolNames = { select: 'Select / move', resize: 'Resize', rotate: 'Rotate', rect: 'Rectangle', circle: 'Circle', polygon: 'Polygon', spawn: 'Spawn', goal: 'Goal', zone: 'Force / death zone', joint: 'Joint' };
+  var toolNames = { select: 'Select / move', resize: 'Resize', rotate: 'Rotate', rect: 'Rectangle', circle: 'Circle', polygon: 'Polygon', spawn: 'Spawn', goal: 'Goal', launcher: 'Bloco de impulso ↑', zone: 'Force / death zone', joint: 'Joint' };
   var hints = {
     select: 'Click an object to select it; drag to move. Delete removes it. Arrow keys move the selection.',
     resize: 'Select an object, then drag a corner or edge to size it. Dimensions can also be entered on the right.',
@@ -15,6 +15,7 @@
     polygon: 'Click 3–8 points. Double-click or Enter finishes a convex polygon; Escape cancels.',
     spawn: 'Click to add a player spawn. Set its team in Properties.',
     goal: 'Drag to draw a Football goal. Team identifies whose goal it is.',
+    launcher: 'Desenhe um bloco que lança jogadores e a bola para cima. Ajuste o impulso nas propriedades.',
     zone: 'Drag to draw a zone; set a force or enable Deadly in Properties.',
     joint: 'Click one body, then another to connect them. Choose Distance or Revolute in Properties.'
   };
@@ -98,7 +99,7 @@
         else if (item.shape === 'rect') html += field('Width', 'w', item.w) + field('Height', 'h', item.h);
         else html += field('Local vertices · JSON', 'points', item.points, 'points');
         html += field('Density', 'density', item.density) + field('Friction', 'friction', item.friction) + field('Bounce', 'restitution', item.restitution) + field('Deadly', 'lethal', item.lethal, 'check') + field('Fixed rotation', 'fixedRotation', item.fixedRotation, 'check');
-        html += field('Velocity X', 'linearVelocity.x', item.linearVelocity && item.linearVelocity.x || 0) + field('Velocity Y', 'linearVelocity.y', item.linearVelocity && item.linearVelocity.y || 0) + field('Angular velocity', 'angularVelocity', item.angularVelocity || 0) + field('Force X', 'force.x', item.force && item.force.x || 0) + field('Force Y', 'force.y', item.force && item.force.y || 0);
+        html += field('Impulso para cima (0 desliga)', 'launchSpeed', item.launchSpeed || 0) + field('Velocity X', 'linearVelocity.x', item.linearVelocity && item.linearVelocity.x || 0) + field('Velocity Y', 'linearVelocity.y', item.linearVelocity && item.linearVelocity.y || 0) + field('Angular velocity', 'angularVelocity', item.angularVelocity || 0) + field('Force X', 'force.x', item.force && item.force.x || 0) + field('Force Y', 'force.y', item.force && item.force.y || 0);
       } else if (selected.kind === 'spawns') html += field('Team', 'team', item.team, 'select', ['1', '2']);
       else if (selected.kind === 'goals' || selected.kind === 'zones') {
         html += field('Width', 'w', item.w) + field('Height', 'h', item.h);
@@ -234,6 +235,7 @@
       if (kind === 'goal') { collection = 'goals'; delete shape.shape; shape.team = 1; }
       else if (kind === 'zone') { collection = 'zones'; delete shape.shape; shape.forceX = 0; shape.forceY = -15; shape.lethal = false; shape.team = 0; }
       else { collection = 'bodies'; shape.id = uniqueId('body'); shape.angle = 0; shape.type = 'static'; shape.color = '#666666'; shape.density = 1; shape.friction = 0.3; shape.restitution = 0.2; shape.lethal = false; shape.fixedRotation = false; shape.linearVelocity = { x: 0, y: 0 }; shape.angularVelocity = 0; shape.force = { x: 0, y: 0 }; }
+      if (kind === 'launcher') { shape.launchSpeed = 18; shape.color = '#b9e56d'; }
       map[collection].push(shape); selected = { kind: collection, index: map[collection].length - 1 };
     }, 'Created ' + toolNames[kind].toLowerCase() + '.');
   }
@@ -275,7 +277,7 @@
         selected = { kind: 'joints', index: map.joints.length - 1 }; jointBody = null;
       }, 'Joint created.'); return;
     }
-    if (['rect', 'circle', 'goal', 'zone'].indexOf(tool) >= 0) drag = { start: point, current: point, create: tool };
+    if (['rect', 'circle', 'goal', 'zone', 'launcher'].indexOf(tool) >= 0) drag = { start: point, current: point, create: tool };
     else {
       target = hit(point, false);
       if (tool === 'select' || !object()) selected = target;

@@ -2,6 +2,7 @@
 const assert = require('node:assert/strict');
 const Core = require('./core.js'), Prediction = require('./prediction.js'), Maps = require('./maps.js');
 const copy = value => JSON.parse(JSON.stringify(value));
+require('./historical-maps.js');
 const dt = Core.PARAMS.dt;
 const map = Maps.validate({ id: 'prediction-check', name: 'Prediction check', author: 'QA', mode: 'classic', width: 1000, height: 700, gravity: 1,
   bodies: [{ id: 'floor', shape: 'rect', type: 'static', x: 500, y: 500, w: 1000, h: 40 }], spawns: [{ x: 750, y: 450 }, { x: 400, y: 450 }], zones: [], joints: [], goals: [] });
@@ -96,5 +97,6 @@ for (const entry of Maps.maps) {
   const state = packet(game), client = Prediction.create(state, 'g1');
   for (let i = 0; i < 10; i++) { client.update(.05, { right: true }, i); step(game, 3, { right: true }); client.reconcile(packet(game, i, 3)); }
 }
-console.log('PASS: immediate local movement, shots and Football kicks; replay/acknowledgements; collision physics in six modes; smooth player/projectile correction; host-only scores/death; bounded outages; validation and 26 maps.');
-console.log('Desktop prediction benchmark, 260 corrections + local steps across 26 maps: ' + (performance.now() - started).toFixed(0) + ' ms. Not a Chromebook measurement.');
+console.log('PASS: immediate local movement, shots and Football kicks; replay/acknowledgements; collision physics in six modes; smooth player/projectile correction; host-only scores/death; bounded outages; validation and all catalogue maps.');
+console.log('Desktop prediction benchmark, ' + Maps.maps.length * 10 + ' corrections + local steps: ' + (performance.now() - started).toFixed(0) + ' ms. Not a Chromebook measurement.');
+

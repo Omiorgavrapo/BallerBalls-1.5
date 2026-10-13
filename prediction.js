@@ -5,9 +5,10 @@
 }(typeof globalThis !== 'undefined' ? globalThis : this, function (Core) {
   'use strict';
   var dt = Core.PARAMS.dt, LIMIT = 90, keys = ['left', 'right', 'up', 'down', 'heavy', 'special'];
-  function create(initial, id) {
+  function create(initial, id, options) {
     if (!initial.players.some(function (p) { return p.id === id; })) return null;
     var game = Core.create(initial.map, { players: initial.players, rules: initial.rules, prediction: true });
+    var limit = options && Number.isInteger(options.maxFrames) ? Math.max(6, Math.min(LIMIT, options.maxFrames)) : LIMIT;
     var frames = [], accumulator = 0, latest, authoritative, offset = { x: 0, y: 0 }, ballOffset = { x: 0, y: 0 }, projectileOffsets = {}, ack = -1, ackTicks = 0;
     function own(value) { return value.players.find(function (p) { return p.id === id; }); }
     function inputs(commands) { var value = {}; authoritative.players.forEach(function (p) { value[p.id] = p.id === id ? commands : p.controls; }); return value; }
@@ -47,7 +48,7 @@
       while (accumulator >= dt) {
         accumulator -= dt;
         // shortcut: stop after 1.5 seconds without useful acknowledgements; longer outages need a working transport, not more guessed physics.
-        if (frames.length >= LIMIT) { accumulator = 0; break; }
+        if (frames.length >= limit) { accumulator = 0; break; }
         var input = {}; keys.forEach(function (key) { input[key] = !!commands[key]; });
         frames.push({ seq: seq, commands: input }); game.step(inputs(input));
       }

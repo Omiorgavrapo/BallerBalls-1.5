@@ -40,6 +40,7 @@ function validate(raw){
    o.points=polygon(b.points);
   }
   ['linearVelocity','force'].forEach(function(key){if(b[key])o[key]={x:finite(b[key].x,key+' x',-10000,10000,0),y:finite(b[key].y,key+' y',-10000,10000,0)};});
+  if(b.launchSpeed!=null)o.launchSpeed=finite(b.launchSpeed,'launch speed',0,38);
   o.angularVelocity=finite(b.angularVelocity,'angular velocity',-1000,1000,0);map.bodies.push(o);
  });
  if(!Array.isArray(raw.spawns)||raw.spawns.length<1||raw.spawns.length>24)throw Error('Map needs 1–24 spawns');
@@ -67,5 +68,14 @@ var maps=[
  make('local-football','Football field','football',[body('floor',500,575,1000,35),body('top',500,45,1000,30),body('lwall',20,270,25,430),body('rwall',980,270,25,430)], [{x:250,y:410,team:1},{x:750,y:410,team:2},{x:330,y:410,team:1},{x:670,y:410,team:2},{x:150,y:410,team:1},{x:850,y:410,team:2},{x:410,y:410,team:1},{x:590,y:410,team:2}],{goals:[{x:55,y:510,w:70,h:110,team:1},{x:945,y:510,w:70,h:110,team:2}]}),
  make('local-football-steps','Football steps','football',[body('floor',500,590,1000,30),body('lwall',20,280,25,460),body('rwall',980,280,25,460),body('lstep',320,500,150,20),body('rstep',680,500,150,20)],null,{goals:[{x:55,y:520,w:70,h:110,team:1},{x:945,y:520,w:70,h:110,team:2}]})
 ];
+maps.push(
+ make('balls-launch','Salto duplo','classic',[body('floor',500,580,800,30),body('pad-l',270,560,110,16,'#b9e56d',{launchSpeed:18}),body('pad-r',730,560,110,16,'#b9e56d',{launchSpeed:18}),body('top',500,230,270,22)]),
+ make('balls-bridge','Ponte quebrada','classic',[body('l',200,520,250,30),body('r',800,520,250,30),body('m',500,420,140,25),body('high',500,240,300,20)]),
+ make('balls-arrows','Arcos e saltos','arrows',[body('floor',500,580,850,30),body('pad',500,560,100,16,'#b9e56d',{launchSpeed:16}),body('l',230,370,170,20),body('r',770,370,170,20)]),
+ make('balls-death','Duelo vertical','deatharrows',[body('l',240,520,250,25),body('r',760,520,250,25),body('pad-l',240,500,100,16,'#b9e56d',{launchSpeed:17}),body('pad-r',760,500,100,16,'#b9e56d',{launchSpeed:17}),body('top',500,180,250,20)]),
+ make('balls-grapple','Céu de ganchos','grapple',[body('floor',500,620,740,25),body('pad',500,600,130,16,'#b9e56d',{launchSpeed:20}),body('l',200,250,160,25),body('r',800,250,160,25),body('anchor',500,100,160,25)]),
+ make('balls-vtol','Túnel aéreo','vtol',[body('floor',500,610,800,25),body('l',150,400,30,330),body('r',850,400,30,330),body('mid',500,340,250,22),body('top',500,120,250,22)]),
+ make('balls-football','Futebol trampolim','football',[body('floor',500,590,1000,30),body('lwall',20,280,25,460),body('rwall',980,280,25,460),body('pad',500,570,130,16,'#b9e56d',{launchSpeed:15})],null,{goals:[{x:55,y:520,w:70,h:110,team:1},{x:945,y:520,w:70,h:110,team:2}]})
+);
 return{maps:maps,validate:validate,modes:modes,make:make};
 });

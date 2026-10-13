@@ -1,4 +1,4 @@
-# Bonk Local + Online
+# Baller Balls — Local + Servidor online
 
 Jogo local em HTML, CSS e JavaScript, com o Bonk.io de 2025 como referência. **A fidelidade 1:1 visual e física ainda não foi comprovada.** As diferenças e os limites dos testes estão em `VERIFICACAO.md` e `REFERENCIAS.md`.
 
@@ -10,9 +10,9 @@ Jogo local em HTML, CSS e JavaScript, com o Bonk.io de 2025 como referência. **
 
 No modo local, até dois humanos no mesmo teclado, além de zero a seis bots. Há dois bots por padrão. Bots usam os mesmos comandos e a mesma física dos humanos.
 
-**Online com PIN:** computadores em redes diferentes podem jogar abrindo o arquivo HTML. O dono escolhe até cinco vagas no total, divididas entre humanos e bots; cada navegador controla um humano. O convite é um **PIN de 8 dígitos**, válido por cinco minutos para uma pessoa; a resposta é automática. Este pacote já tem a configuração do projeto Firebase do proprietário. Todos recebem a mesma pasta. O banco transmite os convites e o controle da sala; o movimento tenta uma conexão direta global por WebRTC e usa HTTPS como reserva. O rodapé mostra **Direta** ou **Via banco**. Veja [ONLINE.md](ONLINE.md). As regras já publicadas não mudaram nesta correção. Chat, amigos e biblioteca pública de mapas ficam para outra etapa.
+**Online com servidor dedicado:** a física e o placar rodam no processo Node do servidor; até cinco participantes usam PINs de 8 dígitos. O criador da sala joga como os convidados. Leia [SERVIDOR.md](SERVIDOR.md) para executar, testar e publicar. A versão 3.1/protocolo 9 exige esse servidor e não usa o banco Firebase para movimento. A publicação no Google ainda depende da habilitação de faturamento pelo proprietário; não foi efetuada.
 
-O convidado usa **previsão no cliente com reconciliação**: sua bolinha, mira, tiros e chutes respondem antes da confirmação. A física local reaplica os comandos pendentes a partir do estado do anfitrião, suavizando pequenas diferenças. Os resultados da partida continuam sendo confirmados pelo dono. Todos precisam atualizar a pasta inteira, incluindo `prediction.js`; esta versão recusa conexões com pacotes antigos.
+Todos os humanos online usam previsão local com reconciliação, incluindo o dono. O servidor confirma física, comandos e resultados; a previsão limita a fila a 30 passos. Os outros participantes usam interpolação. Atualize a pasta inteira; esta versão não conecta a salas antigas baseadas na aba do anfitrião.
 
 ## Regras da partida
 
@@ -43,7 +43,7 @@ Velocidade e tempo de vida afetam Arrows e Death Arrows. O tamanho não altera a
 | Modo | Mecânica desta implementação |
 |---|---|
 | Classic | Movimento, contato com plataformas, pesado e eliminação ao sair da arena. Último sobrevivente vence. |
-| Arrows | Segure Especial, gire a mira continuamente com esquerda/direita e solte para disparar; mirar bloqueia movimento. Flechas empurram. |
+| Arrows | Segure Especial, gire a mira continuamente com as quatro direções e solte para disparar; mirar bloqueia movimento. Flechas empurram. |
 | Death Arrows | O disparo funciona como em Arrows; acertar uma flecha elimina. |
 | Grapple | Segure Especial para prender o gancho a uma superfície próxima; solte para liberar. Contato de um oponente pode soltá-lo. |
 | VTOL | Propulsores direcionais, rotação, colisões e pesado. |
@@ -51,16 +51,23 @@ Velocidade e tempo de vida afetam Arrows e Death Arrows. O tamanho não altera a
 
 O botão **Original / Adapted** e a opção Layout em Configurações mudam a disposição da interface durante a mesma partida. A simulação usa passos fixos de 1/60 s e coordenadas independentes da tela. **Original é uma reconstrução da referência**, sem comprovação pixel a pixel.
 
-Arco, corda, flecha e rodinha de recarga são desenhados no **Canvas**. A mira gira em 360° e pode ser ajustada durante a recarga; a rodinha se completa quando outro disparo fica disponível. Use Z + setas esquerda/direita no Jogador 1 e G + A/D no Jogador 2, ou as teclas configuradas. Todos os participantes online precisam deste pacote atualizado; versões anteriores não entendem as novas regras. Esta atualização conserva as regras Firebase já publicadas.
+Arco, corda, flecha e rodinha de recarga são desenhados no **Canvas**. A mira gira em 360° e pode ser ajustada durante a recarga; a rodinha se completa quando outro disparo fica disponível. Use Z + setas no Jogador 1 e G + WASD no Jogador 2, ou as teclas configuradas. Cima/W gira em um sentido; baixo/S, no outro. Com um único humano local ou no online, WASD também funciona para o Jogador 1 quando suas direções estão no padrão; Especial continua Z. Todos os participantes online precisam deste pacote atualizado; versões anteriores não entendem as novas regras. Esta atualização conserva as regras Firebase já publicadas.
 
-Cinco skins básicas e cor configurável por humano. Áudio sintetizado localmente, com volume/mudo. Para um computador mais lento, use **Gráficos → Baixo**; isso reduz a resolução do Canvas sem modificar o passo da física. A configuração de referência é Samsung Chromebook 3, 2 GB, 1366×768; não houve medição nesse aparelho.
+A interface usa a paleta escura da tela inicial em salas, configurações, seletor de mapas, regras, HUD e editor.
+
+Em **Aparência**, há 30 bolinhas geradas por IA: dez refeitas e vinte novas, além dos seis arcos refeitos. São PNGs cinza transparentes, com sombras suaves e coloração por filtro de imagem. Não há desenho procedural das skins nem Canvas nas prévias. O jogo só exibe as texturas prontas. A cor da bolinha e a do arco são independentes. Os IDs antigos e as escolhas salvas foram preservados; online usa protocolo 9. Veja [SKINS.md](SKINS.md).
+
+Cor configurável por humano. Áudio sintetizado localmente, com volume/mudo. Para um computador mais lento, use **Gráficos → Baixo**; isso reduz a resolução do Canvas sem modificar o passo da física. A configuração de referência é Samsung Chromebook 3, 2 GB, 1366×768; não houve medição nesse aparelho.
 
 ## Mapas e editor
 
-O catálogo possui **26 entradas**: 13 arenas autorais e 13 entradas/variantes de sete mapas reais, com nome, autor e publicação oficial anteriores a 2026. O payload dos mapas foi obtido em outubro de 2026; ele não comprova geometria idêntica à de 2025. Consulte a lista e as adaptações em `MAPAS.md`.
+O catálogo possui **33 entradas**: 20 arenas autorais e 13 entradas/variantes de sete mapas reais, com nome, autor e publicação oficial anteriores a 2026. O payload dos mapas foi obtido em outubro de 2026; ele não comprova geometria idêntica à de 2025. Consulte a lista e as adaptações em `MAPAS.md`.
 
-Em **Map Editor**, crie ou carregue um mapa, selecione uma ferramenta e desenhe na arena. Há retângulos, círculos, polígonos, spawns, gols, zonas e juntas; seleção, movimento, tamanho, rotação, propriedades físicas e Undo/Redo. O painel também permite selecionar objetos ocultos por outros objetos.
+O seletor de mapas local e online inclui busca, filtro por modo e uma prévia grande antes de confirmar. A prévia mostra a gravidade própria do mapa: o ajuste 1× a multiplica, preservando a física anterior aos controles personalizados. O local mantém ajustes salvos; use **Restaurar padrão** para voltar a 1×.
 
+Em **Map Editor**, crie ou carregue um mapa, selecione uma ferramenta e desenhe na arena. Há retângulos, círculos, polígonos, blocos de impulso, spawns, gols, zonas e juntas; seleção, movimento, tamanho, rotação, propriedades físicas e Undo/Redo. O painel também permite selecionar objetos ocultos por outros objetos.
+
+- **Bloco de impulso ↑** cria uma plataforma verde que lança para cima ao tocar sua parte superior. Pode ser girada; o impulso acompanha a orientação. A propriedade **Impulso para cima (0 desliga)** aceita de 0 a 38, em unidades da engine; padrão 18. Exportação e partidas online preservam o bloco.
 - **Test map** joga o rascunho; **Back to editor** retorna para continuar editando.
 - **Save** grava no armazenamento deste navegador. **Load a map** recupera mapas incluídos ou salvos.
 - **Export** cria um JSON portátil; **Import** valida e abre esse formato, preservando o rascunho se o arquivo for inválido. Não importa códigos do formato original do Bonk.io.
@@ -74,20 +81,21 @@ Quem joga não precisa de Node. Para continuar o projeto, com Node instalado, ex
 node check-core.cjs
 node check-rules.cjs
 node check-prediction.cjs
+node check-baller.cjs
+node check-cosmetics.cjs
 ```
 
-A checagem usa somente a biblioteca de física incluída e `assert` do Node: seis modos, cinco humanos, comandos de bots, oito participantes locais, rodadas, placar, pesado, colisões contínuas, geometria/juntas, estado reproduzível e editor lógico. Também valida todos os 26 mapas e sua preservação em JSON. `node check-online.cjs` verifica o transporte global e regras com uma fixture local, `node check-room.cjs` verifica a sala e a continuidade da interpolação com ligações simuladas e `node check-pin.cjs` verifica os PINs. `node check-hybrid.cjs` verifica a negociação automática, mensagens diretas e a reserva após falha/bloqueio do WebRTC. `check-browser.cjs` usa Chrome e Playwright com o Firebase real configurado; cria e limpa dados de teste. Por padrão verifica a reserva HTTPS; com a variável de ambiente `BONK_QA_DIRECT=1`, verifica WebRTC real e sua queda para a reserva. Quem joga só extrai o ZIP configurado e abre o HTML.
+As checagens existentes verificam física, regras, cosméticos, previsão e mapas. Para o servidor atual, execute `node check-server.cjs` e `node check-server-client.cjs`; com Chrome e Playwright, execute `node check-server-browser.cjs`. Os arquivos `check-online.cjs`, `check-room.cjs`, `check-pin.cjs` e `check-hybrid.cjs` pertencem ao transporte legado Firebase/WebRTC, que não é carregado pela interface atual.
 
 ## Conexão pela internet
 
-`online.js` usa HTTPS e streaming SSE do Firebase para convites, controle e reserva, negociando automaticamente uma conexão WebRTC global para estados e comandos. `lan.js` fornece o canal direto com fragmentação e limites; `pin.js` publica convites de uso único. `lan-room.js` conserva o controlador da sala, executando a física no navegador do anfitrião a 60 Hz e enviando até 20 estados por segundo; os convidados enviam mudanças de tecla imediatamente. `prediction.js` usa uma instância de `BonkCore` para antecipar a resposta do jogador local e reconciliar comandos confirmados; a correção física aceita posição, velocidades, recargas e gancho validados, sem prometer restauração exata dos impulsos internos da engine. A memória é limitada a 90 passos pendentes. Os outros participantes usam interpolação. Os pacotes não repetem a geometria do mapa. Os nomes internos herdados não indicam uma restrição a LAN. O anfitrião escolhe os mapas; convidados não publicam. Entradas tardias assistem até a próxima partida. A perda de um participante da partida a encerra e devolve os restantes à sala; uma nova conexão exige novo PIN. Sair da sala do anfitrião a encerra para todos. Esc abre a sala, sem pausar a física. O anfitrião deve manter a aba visível.
+A versão atual entrega o jogo e o multiplayer pelo servidor Node. Ele executa a física a 60 Hz e envia até 20 estados por segundo por WebSocket. Abrir o HTML diretamente continua funcionando no modo local; online exige a URL do servidor publicada. A aba do criador não precisa ficar visível para manter a partida dos demais.
 
-O transporte serializa lotes de mensagens em strings para preservar arrays e valores nulos no banco, limita filas/tamanhos, substitui estados e comandos antigos e encerra conexões que perdem a sequência ou deixam de enviar sinais de vida. Cada conexão possui um identificador aleatório de 128 bits e permissões separadas para anfitrião e convidado. A sessão dura até 45 minutos; confira os resultados e limites dos testes em `VERIFICACAO.md`.
+Reconexão automática reserva a vaga por 60 segundos. Sair transfere a administração ao próximo participante. Salas vazias, convites vencidos e sessões encerradas são removidos. O servidor não expira as partidas aos 45 minutos e não guarda histórico crescente de comandos. Um reinício do processo perde as partidas em memória e exige criar uma nova sala.
 
-`core.js` funciona como script do navegador ou módulo CommonJS, sem DOM, Canvas, áudio ou relógio de parede. `BonkCore.create(map, {players, seed, roundsToWin, rules})` devolve `step(inputs)`, `state()`, `snapshot()`, `restore(snapshot)` e `restartRound()`; inputs são comandos booleanos por ID de jogador e tick. `BonkCore.normalizeRules()` fornece padrões e valida os quatro ajustes; `options-ui.js` compartilha seus controles entre local e online.
+O projeto Firebase já configurado (bonk-98544) está no plano Spark gratuito. O Realtime Database não executa a física; a publicação em Cloud Run exige faturamento e pode gerar cobrança. A hospedagem ainda não foi ativada. Detalhes, limites, instruções e resultados em [SERVIDOR.md](SERVIDOR.md) e [VERIFICACAO.md](VERIFICACAO.md).
 
-Snapshots versão 2 guardam o checkpoint da rodada e os comandos seguintes; restaurar reproduz a rodada para preservar o estado interno da engine. A repetibilidade foi testada no mesmo runtime, sem garantia entre plataformas.
+Biblioteca de física, WebSocket e fontes têm suas licenças incluídas; consulte [LICENCAS.md](LICENCAS.md).
 
-O cliente continua sendo `index.html`. A biblioteca pública pela internet, com publicação só pelo proprietário, fica para outra etapa. Mapas da sala são enviados pelo anfitrião e o editor mantém seu armazenamento e exportação locais. A conexão direta usa STUN do Google; redes que a bloqueiam continuam pelo banco e podem apresentar atraso. Na reserva, movimentos também consomem a cota do Firebase; na conexão direta, essa cota é usada pelos convites e pelo controle da sala. Nenhum serviço TURN pago foi ativado.
 
-Biblioteca de física e fontes têm suas licenças incluídas; consulte `LICENCAS.md`.
+

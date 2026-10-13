@@ -21,6 +21,9 @@
     countdownTicks: 120, roundOverTicks: 150, roundTimeTicks: 10800
   });
   var MODES = Object.freeze(['classic', 'arrows', 'deatharrows', 'grapple', 'vtol', 'football']);
+  var SKINS = Object.freeze({"face":"Carinha","pilot":"Piloto","sentinel":"Sentinela","miner":"Garimpeiro","racer":"Grid","football":"Camisa 10","tennis":"Match Point","wizard":"Arcano","dragon":"Draco","robot":"Autômato","cat":"Gato","panda":"Panda","fox":"Raposa","owl":"Coruja","shark":"Tubarão","penguin":"Pinguim","frog":"Sapo","bear":"Urso","ghost":"Fantasminha","astronaut":"Astronauta","ninja":"Ninja","samurai":"Samurai","pirate":"Pirata","alien":"Alien","crown":"Coroa","crystal":"Cristal","moon":"Lua","lava":"Magma","cloud":"Nuvem","slime":"Slime"});
+  function skinId(id) { return ['plain','stripe','star','ring','basketball','billiard','stitched'].indexOf(id)>=0 ? 'face' : id || 'face'; }
+  var BOWS = Object.freeze({ classic: 'Madeira', sport: 'Recurvo', mechanical: 'Mecânico', crescent: 'Meia-lua', pixel: 'Blocos', drake: 'Espinha de dragão' });
   var RULES = Object.freeze({
     gravity: Object.freeze({ label: 'Gravidade', min: -3, max: 3, step: .1, value: 1, unit: '×', hint: '1× usa a gravidade do mapa. 0 flutua; negativo inverte.' }),
     playerSize: Object.freeze({ label: 'Tamanho dos jogadores', min: .5, max: 2, step: .1, value: 1, unit: '×', hint: 'Muda a bolinha e sua colisão. A bola do Football mantém o tamanho.' }),
@@ -84,7 +87,9 @@
     roster = roster.map(function (p, i) {
       if (!p.id || ids[p.id]) throw new Error('Player IDs must be unique.');
       ids[p.id] = true;
-      return { id: String(p.id), name: String(p.name || p.id), color: p.color || ['#ff3030', '#448aff', '#60b852', '#ffc640'][i % 4], skin: p.skin || 'plain', team: p.team === 2 ? 2 : 1, bot: !!p.bot };
+      if (p.bowColor != null && !/^#[0-9a-f]{6}$/i.test(p.bowColor)) throw Error('Cor do arco inválida.');
+      if (!Object.prototype.hasOwnProperty.call(SKINS, skinId(p.skin)) || !Object.prototype.hasOwnProperty.call(BOWS, p.bowSkin || 'classic')) throw Error('Aparência inválida.');
+      return { id: String(p.id), name: String(p.name || p.id), color: p.color || ['#ff3030', '#448aff', '#60b852', '#ffc640'][i % 4], skin: skinId(p.skin), bowSkin: p.bowSkin || 'classic', bowColor: p.bowColor || p.color || ['#ff3030', '#448aff', '#60b852', '#ffc640'][i % 4], team: p.team === 2 ? 2 : 1, bot: !!p.bot };
     });
     // Football always has both teams even in a one-human + bots session.
     if (mode === 'football' && roster.length > 1 && roster.every(function (p) { return p.team === roster[0].team; })) roster.forEach(function (p, i) { p.team = i % 2 + 1; });
@@ -115,7 +120,7 @@
           linearVelocity: V(number(def.linearVelocity && def.linearVelocity.x, 0) / scale, number(def.linearVelocity && def.linearVelocity.y, 0) / scale), angularVelocity: number(def.angularVelocity, 0),
           fixedRotation: !!def.fixedRotation, linearDamping: number(def.linearDamping, 0), angularDamping: number(def.angularDamping, 0), bullet: def.type === 'dynamic' });
         var id = def.id || 'body' + index;
-        body.setUserData({ kind: 'map', id: id, lethal: !!def.lethal, noGrapple: !!def.noGrapple });
+        body.setUserData({ kind: 'map', id: id, lethal: !!def.lethal, noGrapple: !!def.noGrapple, launchSpeed: def.launchSpeed || 0 });
         if (def.shape === 'circle') bodyFixture(body, pl.Circle(Math.max(.05, number(def.r, 20) / scale)), def);
         else if (def.shape === 'polygon') polygonParts(def.points || []).forEach(function (p) { bodyFixture(body, pl.Polygon(p.map(function (q) { return V(q[0], q[1]); })), def); });
         else bodyFixture(body, pl.Box(Math.max(.02, number(def.w, 80) / (2 * scale)), Math.max(.02, number(def.h, 30) / (2 * scale))), def);
@@ -152,6 +157,10 @@
       world.on('begin-contact', function (contact) {
         var fa = contact.getFixtureA(), fb = contact.getFixtureB(), a = fixtureInfo(fa), b = fixtureInfo(fb);
         function contactOne(x, y, other) {
+          if ((x.kind === 'player' || x.kind === 'ball') && y.launchSpeed) {
+            var launched = x.kind === 'ball' ? ball : playerById[x.id].body;
+            if (other.getLocalPoint(launched.getPosition()).y < 0) pending.push({ type: 'launch', body: launched, pad: other, speed: y.launchSpeed });
+          }
           if (x.kind === 'player') {
             if (y.lethal) pending.push({ type: 'dead', id: x.id, cause: 'hazard' });
             if (y.kind === 'player' && x.id !== y.id) pending.push({ type: 'break', id: x.id });
@@ -243,7 +252,7 @@
       if (Math.abs(p.fixture.getDensity() - density) > .001) { p.fixture.setDensity(density); p.body.resetMassData(); }
       if (mode === 'arrows' || mode === 'deatharrows') {
         if (aiming) {
-          p.aim += ((i.right ? 1 : 0) - (i.left ? 1 : 0)) * .075;
+          p.aim += clamp((i.right ? 1 : 0) + (i.down ? 1 : 0) - (i.left ? 1 : 0) - (i.up ? 1 : 0), -1, 1) * .075;
           p.aim = Math.atan2(Math.sin(p.aim), Math.cos(p.aim));
           if (!p.cooldown) p.charge = clamp(p.charge + 1 / PARAMS.arrowChargeTicks, 0, 1);
         } else if (!i.special && p.prev.special) fire(p);
@@ -339,6 +348,10 @@
     function process() {
       var hitArrows = {};
       pending.forEach(function (event) {
+        if (event.type === 'launch') {
+          var direction = event.pad.getWorldVector(V(0, -1)), velocity = event.body.getLinearVelocity(), delta = Math.max(0, event.speed - V.dot(velocity, direction));
+          event.body.setLinearVelocity(V(velocity.x + direction.x * delta, velocity.y + direction.y * delta));
+        }
         if (event.type === 'dead') eliminate(playerById[event.id], event.cause);
         if (event.type === 'break') breakGrapple(playerById[event.id]);
         if (event.type === 'ball-reset') resetBall();
@@ -384,7 +397,7 @@
     function state() {
       return { tick: tick, phase: phase, countdown: phase === 'countdown' ? Math.ceil(timer * dt) : 0, mode: mode, map: map, rules: clone(opts.rules), round: round, winner: winner, matchWinner: matchWinner, projectileSerial: arrowId,
         timeRemaining: Math.ceil(Math.max(0, number(opts.roundTimeTicks, PARAMS.roundTimeTicks) - roundTicks) * dt),
-        players: players.map(function (p) { var pos = pixels(p.body.getPosition()), g = p.grapple && Object.assign(pixels(p.grapple.body.getWorldPoint(p.grapple.local)), { bodyId: p.grapple.body.getUserData().id, localX: p.grapple.local.x, localY: p.grapple.local.y, length: p.grapple.joint.getMaxLength() }); return Object.assign({ id: p.id, name: p.name, color: p.color, skin: p.skin, team: p.team, bot: p.bot, alive: p.alive, x: pos.x, y: pos.y, angle: p.body.getAngle() * 180 / Math.PI, radius: radius, heavy: p.heavy, heavyStrength: p.heavyStrength, aim: p.aim, charge: p.charge, cooldown: p.cooldown / PARAMS.arrowCooldown, jumpCooldown: p.jumpCooldown, kickCooldown: p.kickCooldown, grappleCooldown: p.grappleCooldown, grapple: g, controls: clone(p.prev) }, motion(p.body)); }),
+        players: players.map(function (p) { var pos = pixels(p.body.getPosition()), g = p.grapple && Object.assign(pixels(p.grapple.body.getWorldPoint(p.grapple.local)), { bodyId: p.grapple.body.getUserData().id, localX: p.grapple.local.x, localY: p.grapple.local.y, length: p.grapple.joint.getMaxLength() }); return Object.assign({ id: p.id, name: p.name, color: p.color, skin: p.skin, bowSkin: p.bowSkin, bowColor: p.bowColor, team: p.team, bot: p.bot, alive: p.alive, x: pos.x, y: pos.y, angle: p.body.getAngle() * 180 / Math.PI, radius: radius, heavy: p.heavy, heavyStrength: p.heavyStrength, aim: p.aim, charge: p.charge, cooldown: p.cooldown / PARAMS.arrowCooldown, jumpCooldown: p.jumpCooldown, kickCooldown: p.kickCooldown, grappleCooldown: p.grappleCooldown, grapple: g, controls: clone(p.prev) }, motion(p.body)); }),
         bodies: map.bodies.map(function (b, i) { var body = mapBodies[b.id || 'body' + i]; if (!body) return Object.assign({}, b, { vx: 0, vy: 0, spin: 0 }); var pos = pixels(body.getPosition()); return Object.assign({}, b, pos, { angle: body.getAngle() * 180 / Math.PI }, motion(body)); }),
         projectiles: arrows.map(function (a) { var pos = pixels(a.body.getPosition()); return Object.assign({ id: a.id, x: pos.x, y: pos.y, angle: a.body.getAngle(), length: 31, owner: a.owner, age: a.age, charge: a.charge }, motion(a.body)); }),
         ball: ball ? Object.assign(pixels(ball.getPosition()), { r: PARAMS.ballRadius, angle: ball.getAngle() * 180 / Math.PI }, motion(ball)) : null, scores: clone(scores), teamScores: clone(teamScores), events: clone(events) };
@@ -393,7 +406,7 @@
       if (phase === 'matchover') { events = []; return; }
       inputs = inputs || {}; events = []; tick++;
       if (opts.prediction && phase !== 'playing') return;
-      var commands = roster.map(function (p) { return p.bot && !opts.prediction ? 0 : encode(inputs[p.id]); }); if (!opts.prediction) history.push(commands);
+      var commands = roster.map(function (p) { return p.bot && !opts.prediction ? 0 : encode(inputs[p.id]); }); if (!opts.prediction && opts.recordHistory !== false) history.push(commands);
       if (phase === 'countdown') { if (--timer <= 0) { phase = 'playing'; emit('start'); } return; }
       if (phase === 'roundover') { if (--timer <= 0) { round++; build(); } return; }
       roundTicks++;
@@ -407,6 +420,7 @@
       build(); events = [];
     }
     function snapshot() {
+      if (opts.recordHistory === false) throw Error('Replay recording is disabled for this live game.');
       // Planck's JSON serializer omits contact warm-start impulses. Replaying the
       // command log restores those too, instead of falsely promising position-only rollback.
       // ponytail: replay cost is at most the current round (normally 3 minutes);
@@ -464,9 +478,9 @@
       return state();
     }
     build();
-    var game = { step: step, state: state, snapshot: snapshot, restore: restore, restartRound: restartRound };
+    var game = { step: step, state: state, snapshot: snapshot, restore: restore, restartRound: restartRound, events: function () { return events; }, phase: function () { return phase; } };
     if (opts.prediction) game.correct = correct;
     return game;
   }
-  return { PARAMS: PARAMS, MODES: MODES, RULES: RULES, normalizeRules: normalizeRules, create: create };
+  return { PARAMS: PARAMS, MODES: MODES, RULES: RULES, SKINS: SKINS, skinId: skinId, BOWS: BOWS, normalizeRules: normalizeRules, create: create };
 }));
