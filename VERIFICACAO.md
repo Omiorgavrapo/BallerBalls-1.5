@@ -1,4 +1,18 @@
-## Publicação gratuita e skins PNG — 13/10/2026
+## Revisão pastel local — 14/10/2026
+
+- 30 bolinhas e seis arcos refeitos individualmente no image_gen integrado. Tennis e Alien tiveram uma segunda tentativa. Originais e prompts preservados em assets/skins/pastel-generated.
+- Todos os PNGs adaptados têm no máximo cinco cores RGB chapadas e alpha real. Tennis usa duas cores, sem o buraco transparente do gerador. Camadas separadas conservam o alpha e as cores dos detalhes.
+- check-pastel-color.cjs passou no Chrome: cores vermelha, azul, preta, branca e lavanda; creme, rosa e tinta escura preservados; bordas reduzidas sem resíduo lavanda ou transparência indevida.
+- check-raster-skins.cjs passou: 108 variantes, cache limitado a 96, salvamento, offline, layout móvel, ausência de Canvas na engine e nas prévias, discos sólidos e soma correta das camadas.
+- check-cosmetics.cjs passou: 180 combinações, persistência e física intacta nos seis modos.
+- check-skin-performance.cjs: 30 mudanças de cor em 5 ms; 30 seleções em 49 ms, com os mesmos cartões e imagens. Amostra no Chrome deste computador.
+- check-server-browser.cjs: cinco clientes com skins e cores diferentes, 60 FPS na amostra local, comandos, reconexão do criador, transferência da sala, jogo offline e zero erros de página.
+- 175.693 bytes nas miniaturas; 433.763 incluindo camadas. skin-textures.js: 584.081 bytes, contra 1.020.577 na revisão anterior.
+- **Publicada no Render Free** em https://baller-balls.onrender.com. Commit de runtime cf246b9a3507e66e820522adc7406c01e5a10cfe; deploy dep-db816d689jmc73bq4gh0 confirmado Live. Os três arquivos públicos coincidem byte a byte com os testados. O controle do navegador foi recuperado e a publicação foi feita pela sessão GitHub já autenticada.
+- check-raster-skins.cjs também passou no site publicado; benchmark público: 30 cores em 3 ms, 30 seleções em 27 ms, conservando cartões e imagens.
+- check-deployed.cjs: cinco jogadores no servidor público, skins sincronizadas, reconexão do dono e estados ordenados, sem regressões. Pings 154/143/145/137/150 ms nesta rede. Sala de teste removida.
+
+## Publicação gratuita e skins PNG — 13/10/2026 (histórico)
 
 - 30 bolinhas (10 refeitas + 20 novas) e 6 arcos gerados pelo image_gen, em cinza com alpha. Originais preservados; 764.402 bytes nas 36 texturas otimizadas.
 - Protocolo 9. check-raster-skins.cjs passou localmente e no site publicado: transparência, cor efetiva, 108 variantes, cache de 96 imagens, salvamento, arquivo offline e layout móvel. Prévias não usam Canvas.

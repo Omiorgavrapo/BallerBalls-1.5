@@ -1,33 +1,58 @@
-# Skins geradas — 30 bolinhas e 6 arcos
+# Skins pastel — 30 bolinhas e 6 arcos
 
-As dez bolinhas existentes foram refeitas com o gerador de imagens, junto
-com os seis arcos. Há vinte bolinhas adicionais: Gato, Panda, Raposa, Coruja,
-Tubarão, Pinguim, Sapo, Urso, Fantasminha, Astronauta, Ninja, Samurai, Pirata,
-Alien, Coroa, Cristal, Lua, Magma, Nuvem e Slime.
+Toda a coleção foi refeita com o image_gen integrado, em gerações individuais.
+Tennis e Alien receberam uma segunda tentativa.
+Os desenhos usam formas grandes, sem textura, brilho, volume ou contornos
+grossos. A adaptação limita cada PNG a cinco cores chapadas, preservando
+as formas geradas e a transparência nas bordas.
+Tennis usa só duas cores; a adaptação corrige a transparência indevida
+no interior do disco retornado pelo gerador, mantendo as faixas creme.
 
-São PNGs reais em cinza, com fundo transparente e volume suave. A cor é
-aplicada por um filtro de imagem do navegador, preservando sombras e brilhos.
-A engine de skins e a tela de aparência não desenham arte no Canvas. O
-Canvas da arena apenas exibe as imagens prontas junto ao restante do jogo.
+Paleta: lavanda #c7b9ed, sombra lavanda #aa9bd4, creme #fff2da,
+rosa #efb6c4 e tinta escura #4d5267. Nem todo desenho usa todas as cores.
+Ao escolher uma cor, só lavanda e sua sombra mudam: a parte principal usa
+exatamente a cor escolhida, e a sombra recebe 86% de cada canal RGB.
+Os detalhes creme, rosa e escuros permanecem intactos. A versão anterior
+tingia o desenho inteiro a partir do cinza, fazendo os detalhes perderem
+sua paleta; esse filtro foi substituído.
 
-`skin-textures.js` inclui as 36 texturas em PNG para funcionar até pelo
-arquivo, sem fetch nem CDN. `skin-art.js` usa feComponentTransfer para
-mapear cinza para a cor escolhida e limita o cache a 96 imagens. `core.js`
-mantém os IDs antigos, acrescentando vinte novos. O protocolo online é 9.
+`skin-textures.js` incorpora as 36 miniaturas PNG e suas camadas para funcionar offline.
+`skin-art.js` colore máscaras alpha da parte principal e sua sombra; a camada
+dos detalhes conserva o RGB original. O filtro soma as três camadas, evitando
+bordas com a cor original e transparência indevida ao reduzir a imagem. Há cache
+limitado a 96 imagens. A engine e as prévias não criam Canvas para gerar
+ou tingir skins; a arena apenas exibe as imagens prontas.
 
-Originais em `assets/skins/generated`; texturas otimizadas em
-`assets/skins/textures`; inventário e hashes em `assets/skins/manifest.json`.
-Os três arquivos manifest-*.json da pasta generated registram os prompts
-completos e os caminhos originais retornados pelo gerador. As 36 imagens
-foram criadas pelo image_gen integrado, uma chamada por asset. A adaptação
-normaliza tamanho, cinza e borda circular, sem redesenhar os detalhes.
+Os originais desta revisão estão em `assets/skins/pastel-generated`,
+com prompts completos nos arquivos manifest-*.json. Os originais da
+versão anterior foram preservados em `assets/skins/generated`.
+Texturas adaptadas: `assets/skins/textures`; inventário, uso da paleta
+e hashes: `assets/skins/manifest.json`. Os IDs, escolhas salvas e o
+protocolo online 9 continuam compatíveis.
+No GitHub, as imagens de execução estão incorporadas em `skin-textures.js`.
+Os originais de geração e os manifests completos de prompts ficam na entrega
+local e no ZIP de imagens. O teste raster verifica diretamente os PNGs
+incorporados, sem precisar extrair as pastas dos originais.
 
-`node check-raster-skins.cjs` verifica PNGs com alpha, 108 combinações de
-cor, alteração efetiva dos pixels exibidos, ausência de Canvas na engine e
-nas prévias, salvamento, arquivo offline, cache limitado e layout móvel.
-`node check-cosmetics.cjs` verifica as 180 combinações de bolinha/arco e que
-elas não alteram a física.
+As 36 miniaturas ocupam 175.693 bytes; incluindo as 108 máscaras/camadas,
+são 433.763 bytes. O script incorporado ocupa 584.081 bytes (antes: 1.020.577).
+`build-skin-assets.cjs` reproduz a adaptação a partir dos originais e requer Sharp.
+O pacote de jogo usa os PNGs já preparados; o ZIP de imagens contém os originais.
 
-## Correção de desempenho do seletor
+O seletor reutiliza seus cartões e miniaturas coloridas. Só duas prévias
+usam filtros compartilhados, atualizados quando a cor muda. Abrir a tela
+de aparência suspende a animação da arena e o blur.
+Benchmark desta revisão no Chrome deste desktop: 30 mudanças de cor em 5 ms,
+30 seleções em 49 ms. As partidas com cinco clientes e skins diferentes
+mantiveram 60 FPS na amostra local. Não é uma medição no aparelho do usuário.
 
-Miniaturas são PNGs estáticos em cinza com carregamento adiado. Só as duas imagens da prévia usam filtros de cor compartilhados. Mudar cor ou equipamento conserva os mesmos cartões e imagens; não refaz a grade nem decodifica trinta novas imagens. A animação da arena e o blur ficam desligados enquanto a aparência está aberta. No mesmo desktop, 30 mudanças de cor passaram de 346 para 5 ms; 30 seleções, de 326 para 20 ms. Não é uma medição no aparelho do usuário.
+Validação:
+
+- `node check-pastel-color.cjs`: compara pixels realmente renderizados
+  no Chrome; troca a cor principal e verifica que os detalhes não mudam.
+- `node check-raster-skins.cjs`: cinco cores no máximo, alpha, 108 variantes,
+  funcionamento offline, salvamento, ausência de Canvas na engine/prévias,
+  cache limitado e layout móvel.
+- `node check-skin-performance.cjs`: mede mudanças de cor/seleção e exige
+  que os mesmos cartões e imagens sejam reutilizados.
+- `node check-cosmetics.cjs`: 180 combinações, persistência e física intacta.

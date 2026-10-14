@@ -12,6 +12,7 @@ try { playwright = require('playwright'); } catch (_) { playwright = require(pat
   try {
     for (let i = 0; i < 5; i++) {
       const context = await browser.newContext({ viewport: { width: 1366, height: 768 } }); contexts.push(context);
+      await context.addInitScript(({skin,color,index})=>localStorage.setItem('bonk-local-settings',JSON.stringify({p1:{name:'Pastel '+index,skin,color,bowSkin:'drake',bowColor:color}})),{skin:['fox','wizard','astronaut','frog','robot'][i],color:['#a4bcd7','#e8aab8','#b5c9a4','#d6bae5','#e6c99b'][i],index:i});
       const page = await context.newPage(); pages.push(page);
       page.on('pageerror', error => errors.push(error.message));
       page.on('request', request => { if (!request.url().startsWith(base) && !/^(data|blob):/.test(request.url())) external.push(request.url()); });
@@ -62,7 +63,7 @@ try { playwright = require('playwright'); } catch (_) { playwright = require(pat
     await local.locator('#startButton').click();
     await local.locator('#gameHud.active').waitFor();
     assert.deepEqual(errors, []); assert.deepEqual(external, []);
-    fs.writeFileSync(path.join(qa, 'server-browser-results.json'), JSON.stringify({ ...metrics, errors, external, simulatedHours: 3, productionDeployed: false }, null, 2));
+    fs.writeFileSync(path.join(qa, 'server-browser-results.json'), JSON.stringify({ ...metrics, errors, external, productionDeployed: false }, null, 2));
     console.log('PASS Chrome: five players, real keys, disconnected owner does not stop match, owner reload resumes, owner Leave transfers controls, local offline game, no Firebase/network dependencies or page errors.');
     console.log(JSON.stringify(metrics));
   } finally { await browser.close(); await app.close(); }
