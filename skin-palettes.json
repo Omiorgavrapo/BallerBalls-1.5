@@ -1,0 +1,42 @@
+{
+  "ball": {
+    "face": ["#f1c2a7", "#dda68d", "#fff1dc", "#efa7af", "#66505c"],
+    "pilot": ["#b6d4e8", "#94b6cf", "#fff0d8", "#dca898", "#465870"],
+    "sentinel": ["#b2c4d1", "#91a9bb", "#eaf0eb", "#c3b5a9", "#46525f"],
+    "miner": ["#ead29b", "#c8af7e", "#fff5dc", "#cfa38b", "#665a48"],
+    "racer": ["#b8d8c8", "#92b9aa", "#f9efdb", "#efa8a7", "#4b5863"],
+    "football": ["#d8e1c9", "#b4c3ad", "#fff4de", "#c9b69e", "#55616a"],
+    "tennis": ["#d5e79f", "#b5cb80", "#fff9df", "#ecc9a6", "#60704d"],
+    "wizard": ["#ccb9e6", "#aa95c9", "#fff0cd", "#dba4bf", "#61516f"],
+    "dragon": ["#b3d8c0", "#8abb9f", "#fff1cf", "#e6b19b", "#49695c"],
+    "robot": ["#b2d5d6", "#8ab6ba", "#f2efe1", "#dea6a0", "#465d69"],
+    "cat": ["#edc898", "#cda977", "#fff3db", "#e9aaa9", "#715952"],
+    "panda": ["#ebe5ce", "#d3ccb2", "#faf5e6", "#dfb8ae", "#676d75"],
+    "fox": ["#efbc9c", "#d79879", "#fff3da", "#d99e99", "#725a5b"],
+    "owl": ["#d6bdab", "#b69c8b", "#fff0d7", "#deb099", "#69595a"],
+    "shark": ["#abcddd", "#87aec3", "#fff1de", "#e3b9b4", "#4b6373"],
+    "penguin": ["#b5c4d9", "#93a6c0", "#fff6e8", "#edc28f", "#4b5970"],
+    "frog": ["#bfda9d", "#9abb7c", "#fff5d6", "#e9b0aa", "#597153"],
+    "bear": ["#d7b69c", "#b7927a", "#fff0d7", "#dfb0a6", "#72564f"],
+    "ghost": ["#d4e8e5", "#aecfc9", "#faf9ed", "#debfc9", "#627178"],
+    "astronaut": ["#c5d9e5", "#a0baca", "#faf5e9", "#e3ad99", "#4d6075"],
+    "ninja": ["#c8c8cf", "#a5a5b1", "#f8ecd6", "#d3a0a1", "#565666"],
+    "samurai": ["#e3b3b0", "#c79291", "#fbe6bd", "#c7bca1", "#6d5260"],
+    "pirate": ["#ccd4b0", "#a9b38d", "#fff0d3", "#d5a394", "#626252"],
+    "alien": ["#c1dfbd", "#9bbe96", "#f7f4d9", "#d9b2d4", "#596654"],
+    "crown": ["#eedbad", "#ceb782", "#fff5da", "#e7aac1", "#765b64"],
+    "crystal": ["#b7dfe4", "#92bfc9", "#f1f6eb", "#c6b4df", "#546778"],
+    "moon": ["#e2d6b6", "#c4b898", "#fff5d5", "#d8bca9", "#726854"],
+    "lava": ["#e7b19c", "#c78e7d", "#ffe5b8", "#f2c977", "#7b5757"],
+    "cloud": ["#b5daed", "#91bbd3", "#fff8e7", "#e8bdc7", "#5b7182"],
+    "slime": ["#b8e1c4", "#95c4a5", "#f5f6d7", "#e7b7b8", "#536b5c"]
+  },
+  "bow": {
+    "classic": ["#d9b894", "#b79472", "#fff0cd", "#bba79a", "#6d584d"],
+    "sport": ["#b0d5cc", "#8ab8af", "#fff4de", "#d8a7b4", "#4d6266"],
+    "mechanical": ["#b8c9d8", "#95aabd", "#eff4e8", "#dcb7a1", "#526078"],
+    "crescent": ["#e9d6a7", "#c7b684", "#fff4d2", "#ccbce1", "#706078"],
+    "pixel": ["#dfb2c5", "#bd90a9", "#ffefdd", "#abcbbc", "#705667"],
+    "drake": ["#b9d0a3", "#94af7e", "#fff0cb", "#dcba9c", "#5c6951"]
+  }
+}

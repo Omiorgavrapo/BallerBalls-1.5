@@ -1,7 +1,8 @@
 (function(root){'use strict';
 function shape(ctx,b){ctx.beginPath();if(b.shape==='circle')ctx.arc(0,0,b.r,0,Math.PI*2);else if(b.shape==='polygon'&&b.points){b.points.forEach(function(p,i){if(i)ctx.lineTo(p[0],p[1]);else ctx.moveTo(p[0],p[1]);});ctx.closePath();}else ctx.rect(-b.w/2,-b.h/2,b.w,b.h);}
 function skinArt(ctx,p,r){var sprite=BonkSkinArt.sprite('ball',BonkCore.skinId(p.skin),p.color);if(sprite)ctx.drawImage(sprite,-r,-r,r*2,r*2);}
-function bowArt(ctx,p,x,br){var sprite=BonkSkinArt.sprite('bow',p.bowSkin||'classic',p.bowColor||p.color);if(sprite)ctx.drawImage(sprite,x,-br*1.25,br*1.5,br*2.5);}
+// Clip the baked string at its destination; the game draws the movable string.
+function bowArt(ctx,p,x,br,tipX,tipY){var id=p.bowSkin||'classic',sprite=BonkSkinArt.sprite('bow',id,p.bowColor||p.color),anchor=BonkSkinBowAnchors[id];if(sprite&&anchor){var scale=tipY*2/(anchor.bottom-anchor.top),left=anchor.bodyLeft,top=-tipY-anchor.top*scale;ctx.save();ctx.beginPath();ctx.rect(tipX+(left-anchor.stringX)*scale,top,(128-left)*scale,256*scale);ctx.clip();ctx.drawImage(sprite,tipX-anchor.stringX*scale,top,128*scale,256*scale);ctx.restore();}}
 function disc(ctx,p,mode){var r=p.radius||16;ctx.save();ctx.translate(p.x,p.y);ctx.rotate((p.angle||0)*Math.PI/180);
  if(mode==='vtol'){ctx.fillStyle='#37474f';ctx.strokeStyle='#17232a';ctx.lineWidth=2;[-1,1].forEach(function(side){ctx.fillRect(side*r*1.35-5,-5,10,16);ctx.strokeRect(side*r*1.35-5,-5,10,16);if(p.controls&&(p.controls.up||(side<0?p.controls.right:p.controls.left)||p.controls.down)){ctx.fillStyle='#ffb74d';ctx.beginPath();ctx.moveTo(side*r*1.35-4,11);ctx.lineTo(side*r*1.35,25);ctx.lineTo(side*r*1.35+4,11);ctx.fill();ctx.fillStyle='#37474f';}});}
  skinArt(ctx,p,r);if(p.heavy){ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.strokeStyle='rgba(20,30,35,.7)';ctx.lineWidth=3;ctx.stroke();}ctx.restore();
@@ -12,7 +13,7 @@ function drawBow(ctx,p){var r=p.radius||16,charge=Math.max(0,Math.min(1,p.charge
  if(aiming||charge>0){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.aim||0);ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=cooldown>0?.55:1;
  var x=r*.65+7,br=Math.max(13,r*.85),tipX=x+Math.cos(1.05)*br,tipY=Math.sin(1.05)*br,pull=x-5-charge*14;
  bowArt(ctx,p,x,br,tipX,tipY);
- ctx.beginPath();ctx.moveTo(tipX,-tipY);ctx.lineTo(pull,0);ctx.lineTo(tipX,tipY);ctx.strokeStyle='#f9faf4';ctx.lineWidth=1.6;ctx.stroke();
+ ctx.beginPath();ctx.moveTo(tipX,-tipY);ctx.lineTo(pull,0);ctx.lineTo(tipX,tipY);ctx.strokeStyle=BonkSkinPalettes.bow[p.bowSkin||'classic'][2];ctx.lineWidth=1.6;ctx.stroke();
  var end=x+br+19+charge*8;ctx.beginPath();ctx.moveTo(pull,0);ctx.lineTo(end,0);ctx.strokeStyle='#172b34';ctx.lineWidth=4;ctx.stroke();ctx.strokeStyle=modeColor(p);ctx.lineWidth=1.8;ctx.stroke();
  ctx.beginPath();ctx.moveTo(end+5,0);ctx.lineTo(end-3,-4);ctx.lineTo(end-3,4);ctx.closePath();ctx.fillStyle=ctx.strokeStyle;ctx.strokeStyle='#172b34';ctx.lineWidth=1.2;ctx.fill();ctx.stroke();ctx.restore();}
  if(cooldown>0||aiming){ctx.save();ctx.translate(p.x+r*.85,p.y+r*.85);var meter=Math.max(5,r*.3);ctx.beginPath();ctx.arc(0,0,meter+2,0,Math.PI*2);ctx.fillStyle='#20353ceb';ctx.fill();ctx.beginPath();ctx.arc(0,0,meter,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-cooldown));ctx.strokeStyle=cooldown>0?'#f3ca7e':'#ccf06a';ctx.lineWidth=2.5;ctx.stroke();ctx.restore();}

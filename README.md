@@ -55,7 +55,7 @@ Arco, corda, flecha e rodinha de recarga são desenhados no **Canvas**. A mira g
 
 A interface usa a paleta escura da tela inicial em salas, configurações, seletor de mapas, regras, HUD e editor.
 
-Em **Aparência**, há 30 bolinhas e seis arcos refeitos com o gerador de imagens. Os PNGs transparentes usam formas simples e no máximo cinco cores pastel chapadas. A troca de cor muda só a parte principal e sua sombra, mantendo as cores dos detalhes. As miniaturas já são coloridas. Não há desenho procedural das skins nem Canvas nas prévias. A cor da bolinha e a do arco são independentes. Os IDs e escolhas salvas foram preservados; online usa protocolo 9. Veja [SKINS.md](SKINS.md).
+Em **Aparência**, há 30 bolinhas e seis arcos com desenhos gerados por imagens. Cada skin tem uma paleta pastel própria e usa no máximo cinco cores chapadas. Escolher outra skin carrega sua cor principal original; a troca manual muda só essa parte e sua sombra, mantendo as cores dos detalhes. **Cores originais** restaura a bolinha e o arco selecionados. Os arcos ficam voltados para o lado do tiro, alinhados à corda da partida. As miniaturas são PNGs coloridos; a engine e as prévias não geram desenhos no Canvas. Cor da bolinha e do arco são independentes. Os IDs e escolhas salvas continuam compatíveis; online usa protocolo 9. Veja [SKINS.md](SKINS.md).
 
 Cor configurável por humano. Áudio sintetizado localmente, com volume/mudo. Para um computador mais lento, use **Gráficos → Baixo**; isso reduz a resolução do Canvas sem modificar o passo da física. A configuração de referência é Samsung Chromebook 3, 2 GB, 1366×768; não houve medição nesse aparelho.
 

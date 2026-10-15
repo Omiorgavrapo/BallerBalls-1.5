@@ -5,13 +5,15 @@ const pw=require(path.join(packages,'playwright')),sharp=require(path.join(packa
 (async()=>{
  const exported={window:{}};require('node:vm').runInNewContext(fs.readFileSync(path.join(__dirname,'skin-textures.js'),'utf8'),exported);
  const textures=exported.window.BonkSkinTextures,layers=exported.window.BonkSkinLayers;
- const manifest={balls:textures.ball,bows:textures.bow,palette:exported.window.BonkSkinPalette,assets:[]};
- for(const kind of ['ball','bow'])for(const id of Object.keys(textures[kind]))manifest.assets.push({kind,id,png:textures[kind][id],layers:layers[kind][id]});
+ const palettes=exported.window.BonkSkinPalettes;
+ const manifest={balls:textures.ball,bows:textures.bow,assets:[]};
+ for(const kind of ['ball','bow'])for(const id of Object.keys(textures[kind]))manifest.assets.push({kind,id,png:textures[kind][id],layers:layers[kind][id],palette:palettes[kind][id]});
  const buffer=uri=>Buffer.from(uri.split(',')[1],'base64');
  assert.equal(Object.keys(manifest.balls).length,30);assert.equal(Object.keys(manifest.bows).length,6);
- assert.equal(manifest.palette.length,5);
- const palette=new Set(manifest.palette.map(c=>c.slice(1).toLowerCase()));
+ assert.equal(new Set(manifest.assets.map(a=>JSON.stringify(a.palette))).size,36,'Each skin has its own palette');
+ assert.equal(new Set(Object.values(palettes.ball).map(p=>p[0])).size,30,'Ball primary colors are individual');
  for(const asset of manifest.assets){
+  assert.equal(asset.palette.length,5);const palette=new Set(asset.palette.map(c=>c.slice(1).toLowerCase()));
   const {data,info}=await sharp(buffer(asset.png)).ensureAlpha().raw().toBuffer({resolveWithObject:true});
   assert.equal(info.width,asset.kind==='ball'?256:128);assert.equal(info.height,256);
   assert.equal(info.channels,4);let transparent=0,opaque=0;
@@ -41,7 +43,7 @@ const pw=require(path.join(packages,'playwright')),sharp=require(path.join(packa
   await page.goto(target);await page.evaluate(()=>BonkSkinArt.ready);
   await page.locator('[data-action="skins"]').click();assert.equal(await page.locator('.skin-card').count(),30);
   assert.equal(await page.locator('.appearance-layout canvas').count(),0,'Appearance previews are images, never Canvas');
-  await page.locator('[data-skin="fox"]').click();await page.locator('#skinColor').fill('#e65b37');await page.locator('#skinColor').dispatchEvent('input');
+  await page.locator('button.skin-card[data-skin="fox"]').click();assert.equal(await page.locator('#skinColor').inputValue(),palettes.ball.fox[0]);await page.locator('#skinColor').fill('#e65b37');await page.locator('#skinColor').dispatchEvent('input');
   await page.waitForFunction(()=>document.getElementById('outfitBall').complete&&document.getElementById('outfitBall').naturalWidth>0);
   const red=await page.locator('#outfitBall').screenshot();
   await page.locator('#skinColor').fill('#378fdf');await page.locator('#skinColor').dispatchEvent('input');
@@ -51,7 +53,7 @@ const pw=require(path.join(packages,'playwright')),sharp=require(path.join(packa
   assert(stats[0].channels[0].mean>stats[1].channels[0].mean+15,'Tint must actually change rendered red channel');
   assert(stats[1].channels[2].mean>stats[0].channels[2].mean+15,'Tint must actually change rendered blue channel');
   await page.locator('#bowSkinsTab').click();assert.equal(await page.locator('.skin-card').count(),6);
-  await page.locator('[data-skin="drake"]').click();await page.locator('#bowColor').fill('#83be69');await page.locator('#bowColor').dispatchEvent('input');
+  await page.locator('button.skin-card[data-skin="drake"]').click();await page.locator('#bowColor').fill('#83be69');await page.locator('#bowColor').dispatchEvent('input');
   await page.locator('#skinsDone').click();await page.reload();
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('bonk-local-settings')).p1);
   assert.equal(saved.skin,'fox');assert.equal(saved.color,'#378fdf');assert.equal(saved.bowSkin,'drake');assert.equal(saved.bowColor,'#83be69');
@@ -63,8 +65,11 @@ const pw=require(path.join(packages,'playwright')),sharp=require(path.join(packa
    }finally{document.createElement=create;}
   });assert.equal(checks.canvas,0);assert(checks.cache<=96);assert(checks.image);
   await page.locator('[data-action="skins"]').click();await page.locator('#ballSkinsTab').click();
-  await page.locator('#skinColor').fill('#a4bcd7');await page.locator('#skinColor').dispatchEvent('input');
-  await page.locator('#bowColor').fill('#b5c9a4');await page.locator('#bowColor').dispatchEvent('input');
+  await page.locator('button.skin-card[data-skin="fox"]').click();assert.equal(await page.locator('#skinColor').inputValue(),'#378fdf','Clicking equipped skin keeps custom color');
+  await page.locator('button.skin-card[data-skin="frog"]').click();assert.equal(await page.locator('#skinColor').inputValue(),palettes.ball.frog[0]);
+  await page.locator('button.skin-card[data-skin="fox"]').click();assert.equal(await page.locator('#skinColor').inputValue(),palettes.ball.fox[0]);
+  await page.locator('#skinColor').fill('#123456');await page.locator('#skinColor').dispatchEvent('input');await page.locator('#skinColorsReset').click();
+  assert.equal(await page.locator('#skinColor').inputValue(),palettes.ball.fox[0]);assert.equal(await page.locator('#bowColor').inputValue(),palettes.bow.drake[0]);
   await page.waitForFunction(()=>Array.from(document.querySelectorAll('.skin-card img')).every(i=>i.complete&&i.naturalWidth>0));
   fs.mkdirSync(path.join(__dirname,'.qa'),{recursive:true});await page.screenshot({path:path.join(__dirname,process.env.BONK_QA_URL?'.qa/pastel-skins-live.png':'.qa/pastel-skins-ui.png')});
   await page.setViewportSize({width:390,height:844});assert(await page.locator('.appearance-layout').evaluate(e=>e.scrollWidth<=e.clientWidth+1));
@@ -72,3 +77,4 @@ const pw=require(path.join(packages,'playwright')),sharp=require(path.join(packa
   console.log('PASS: 30 generated pastel PNG balls + 6 bows; at most 5 flat colors; real alpha; actual red/blue tint; 108 color variants; zero Canvas creation in skin engine/previews; offline; persistence; bounded 96-image cache; mobile layout.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
+

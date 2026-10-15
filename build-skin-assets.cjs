@@ -9,13 +9,17 @@ const balls = {
 const bows = { classic:'Madeira', sport:'Recurvo', mechanical:'Mecânico', crescent:'Meia-lua', pixel:'Blocos', drake:'Espinha de dragão' };
 const palette=['#c7b9ed','#aa9bd4','#fff2da','#efb6c4','#4d5267'];
 const paletteRGB=palette.map(c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)));
+const palettes=require('./skin-palettes.json');
 const root = __dirname, source = path.join(root, 'assets/skins/pastel-generated'), output = path.join(root, 'assets/skins/textures');
 async function build() {
   fs.mkdirSync(output, { recursive:true });
-  const textures = { ball:{}, bow:{} }, layers={ball:{},bow:{}}, manifest = [];
+  const textures = { ball:{}, bow:{} }, layers={ball:{},bow:{}}, bowAnchors={}, manifest = [];
   for (const [kind, catalogue] of Object.entries({ ball:balls, bow:bows })) for (const [id, label] of Object.entries(catalogue)) {
     const name = kind === 'bow' ? 'bow-' + id : id, file = path.join(source, name + '.png');
     if (!fs.existsSync(file)) throw Error('Missing generated image: ' + name);
+    const ownPalette=palettes[kind][id];
+    if(!ownPalette||ownPalette.length!==5||ownPalette.some(c=>!/^#[0-9a-f]{6}$/i.test(c)))throw Error('Invalid palette: '+name);
+    const ownRGB=ownPalette.map(c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)));
     const original = fs.readFileSync(file), {data, info} = await sharp(original).ensureAlpha().raw().toBuffer({resolveWithObject:true});
     const rows = new Uint32Array(info.height), columns = new Uint32Array(info.width);
     for (let y=0; y<info.height; y++) for (let x=0; x<info.width; x++) if (data[(y*info.width+x)*4+3]>220) { rows[y]++; columns[x]++; }
@@ -57,15 +61,29 @@ async function build() {
         const offset=(y*size.width+x)*4+3; pixels[offset]=Math.round((id==='tennis'?255:pixels[offset])*coverage);
       }
     }
-    const png = await sharp(normalized.data,{raw:normalized.info}).png({compressionLevel:9}).toBuffer();
-    fs.writeFileSync(path.join(output,name+'.png'),png);
-    textures[kind][id] = 'data:image/png;base64,'+png.toString('base64');
+    if(kind==='bow'){
+      normalized.data=await sharp(normalized.data,{raw:normalized.info}).flop().raw().toBuffer();
+      const counts=new Uint16Array(128);
+      for(let y=0;y<256;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4;if(normalized.data[i]===paletteRGB[2][0]&&normalized.data[i+3]>16)counts[x]++;}
+      const stringX=counts.indexOf(Math.max(...counts));let top=256,bottom=0,right=stringX;
+      for(let y=0;y<256;y++){const i=(y*128+stringX)*4;if(normalized.data[i]===paletteRGB[2][0]&&normalized.data[i+3]>16){top=Math.min(top,y);bottom=Math.max(bottom,y);}}
+      if(bottom-top<150)throw Error('Bow string not found: '+id);
+      const coreColumns=new Uint16Array(128);
+      for(let y=Math.ceil(top+(bottom-top)*.25);y<bottom-(bottom-top)*.25;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4;if(normalized.data[i+3]>4)coreColumns[x]++;}
+      while(right<127&&coreColumns[right+1]>(bottom-top)*.1)right++;
+      bowAnchors[id]={stringX,top,bottom,bodyLeft:right+1};
+    }
     const separated={primary:Buffer.alloc(normalized.data.length),shade:Buffer.alloc(normalized.data.length),details:Buffer.alloc(normalized.data.length)};
     for(let offset=0;offset<normalized.data.length;offset+=4){
-      const layer=normalized.data[offset]===paletteRGB[0][0]?'primary':normalized.data[offset]===paletteRGB[1][0]?'shade':'details';
+      const index=paletteRGB.findIndex(rgb=>rgb[0]===normalized.data[offset]);
+      const layer=index===0?'primary':index===1?'shade':'details';
+      ownRGB[index].forEach((channel,i)=>{normalized.data[offset+i]=channel;});
       const target=separated[layer];for(let i=0;i<3;i++)target[offset+i]=layer==='details'?normalized.data[offset+i]:255;
       target[offset+3]=normalized.data[offset+3];
     }
+    const png = await sharp(normalized.data,{raw:normalized.info}).png({compressionLevel:9}).toBuffer();
+    fs.writeFileSync(path.join(output,name+'.png'),png);
+    textures[kind][id] = 'data:image/png;base64,'+png.toString('base64');
     layers[kind][id]={};const layerFiles={};
     for(const [layer,data] of Object.entries(separated)){
       const image=await sharp(data,{raw:normalized.info}).png({compressionLevel:9}).toBuffer();
@@ -73,10 +91,10 @@ async function build() {
       layers[kind][id][layer]='data:image/png;base64,'+image.toString('base64');
       layerFiles[layer]={texture:'textures/'+name+'-'+layer+'.png',bytes:image.length,sha256:crypto.createHash('sha256').update(image).digest('hex')};
     }
-    manifest.push({kind,id,label,source:'pastel-generated/'+name+'.png',texture:'textures/'+name+'.png',layers:layerFiles,width:normalized.info.width,height:normalized.info.height,paletteUsage:usage,adaptation:id==='tennis'?'two-color-quantization-solid-disc-alpha':'five-color-quantization',bytes:png.length,sha256:crypto.createHash('sha256').update(png).digest('hex')});
+    manifest.push({kind,id,label,palette:ownPalette,source:'pastel-generated/'+name+'.png',texture:'textures/'+name+'.png',layers:layerFiles,width:normalized.info.width,height:normalized.info.height,paletteUsage:usage,adaptation:id==='tennis'?'two-color-quantization-solid-disc-alpha':'five-color-quantization',bytes:png.length,sha256:crypto.createHash('sha256').update(png).digest('hex')});
   }
-  fs.writeFileSync(path.join(root,'skin-textures.js'),'/* Generated flat pastel PNGs and color masks, embedded for offline play. */\nwindow.BonkSkinPalette='+JSON.stringify(palette)+';\nwindow.BonkSkinTextures='+JSON.stringify(textures)+';\nwindow.BonkSkinLayers='+JSON.stringify(layers)+';\n');
-  fs.writeFileSync(path.join(root,'assets/skins/manifest.json'),JSON.stringify({generator:'Built-in image_gen',style:'flat-pastel-five-colors',palette,balls,bows,assets:manifest},null,2));
+  fs.writeFileSync(path.join(root,'skin-textures.js'),'/* Generated flat pastel PNGs with individual palettes and color masks. */\nwindow.BonkSkinPalettes='+JSON.stringify(palettes)+';\nwindow.BonkSkinBowAnchors='+JSON.stringify(bowAnchors)+';\nwindow.BonkSkinTextures='+JSON.stringify(textures)+';\nwindow.BonkSkinLayers='+JSON.stringify(layers)+';\n');
+  fs.writeFileSync(path.join(root,'assets/skins/manifest.json'),JSON.stringify({generator:'Built-in image_gen',style:'flat-pastel-five-colors',palettes,bowAnchors,balls,bows,assets:manifest},null,2));
   console.log('PASS: '+Object.keys(balls).length+' generated ball PNGs + '+Object.keys(bows).length+' generated bow PNGs; '+manifest.reduce((sum,m)=>sum+m.bytes+Object.values(m.layers).reduce((s,l)=>s+l.bytes,0),0)+' bytes including color masks. Originals preserved.');
 }
 if(require.main===module)build().catch(error=>{console.error(error);process.exitCode=1;});
