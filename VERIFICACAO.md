@@ -1,4 +1,16 @@
-## Revisão pastel local — 14/10/2026
+## Paletas próprias e arcos orientados — 14/10/2026
+
+- 36 paletas distintas em skin-palettes.json, com cinco cores por skin; 30 cores principais diferentes nas bolinhas. Miniaturas e cores originais individuais, sem roxo global.
+- Ao trocar de skin, o seletor aplica a cor principal original dela. A skin equipada mantém a personalização; Cores originais restaura a bolinha e o arco selecionados.
+- check-raster-skins.cjs passou localmente e no site público: paletas individuais, cinco cores, transparência, detalhes, 108 variantes, troca/restauração, salvamento, offline e layout móvel.
+- check-pastel-color.cjs passou: a paleta original conserva a própria sombra, cores personalizadas não tingem os detalhes nem deixam franjas nas bordas.
+- Os seis PNGs dos arcos foram espelhados. check-bow-orientation.cjs passou localmente e no site público: lâminas à frente da corda, dois pontos alinhados, corda estática recortada no destino, corda móvel na cor própria do arco. Prévia usa o renderizador real da arena.
+- check-skin-performance.cjs: 30 mudanças de cor em 5 ms e 30 seleções em 39 ms, mantendo os cartões e imagens. Amostra no desktop.
+- check-server-browser.cjs: cinco clientes com skins diferentes, reconexão do dono, transferência da sala, jogo offline e zero erros; amostra local de 60 FPS.
+- Publicado no Render Free: commit 98fc720243e993462053617bb50616e7411ab602, deploy dep-db81i5mq1p3s7397hp9g confirmado Live. Os quatro arquivos de runtime servidos pelo site coincidem byte a byte com os testados. Protocolo 9 saudável.
+- Não houve medição no aparelho do usuário.
+
+## Revisão pastel com paleta única — 14/10/2026 (histórico)
 
 - 30 bolinhas e seis arcos refeitos individualmente no image_gen integrado. Tennis e Alien tiveram uma segunda tentativa. Originais e prompts preservados em assets/skins/pastel-generated.
 - Todos os PNGs adaptados têm no máximo cinco cores RGB chapadas e alpha real. Tennis usa duas cores, sem o buraco transparente do gerador. Camadas separadas conservam o alpha e as cores dos detalhes.
